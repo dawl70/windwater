@@ -1,0 +1,3591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이기풍수 감결</title>
+<meta name="description" content="풍수지리 이기론 기반 감결 시뮬레이션 시스템">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ───────────────────────── RESET ───────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --teal:#00c9a7; --teal-lt:#44ffdb; --teal-dk:#007a63;
+  --gold:#c8a93e; --gold-lt:#f0d060; --gold-dk:#7a6010;
+  --red:#e05050; --jade:#1a6b4e;
+  --panel:#050f0a; --pbg:rgba(4,14,10,.92);
+  --pb:rgba(0,160,110,.45); --pb2:rgba(0,120,80,.25);
+  --txt:#c8ffe0; --txt2:#5aaa80; --txt3:#3a7050;
+}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--txt);background:#050f0a}
+
+/* ─── NATURE BACKGROUND ─── */
+.nature-bg{
+  position:fixed;inset:0;z-index:0;
+  background:linear-gradient(180deg,
+    #b4ddf0 0%,#8ac8e4 18%,#5aaa80 36%,
+    #3d8060 50%,#2a5c42 65%,#1c3d2a 80%,#0f2018 100%);
+}
+.nature-bg::before{
+  content:'';position:absolute;bottom:22%;width:100%;height:55%;
+  background:linear-gradient(180deg,transparent 0%,#2e5e40 55%,#1a3d28 100%);
+  clip-path:polygon(0% 100%,0% 68%,3% 58%,7% 40%,11% 55%,
+    16% 28%,21% 48%,26% 14%,31% 34%,35% 22%,40% 44%,
+    45% 8%,49% 26%,54% 16%,59% 40%,64% 22%,69% 46%,
+    74% 30%,79% 52%,84% 36%,88% 56%,93% 42%,97% 60%,100% 52%,100% 100%);
+}
+.nature-bg::after{
+  content:'';position:absolute;bottom:0;width:100%;height:26%;
+  background:linear-gradient(180deg,transparent,rgba(10,60,130,.35) 60%,rgba(5,40,100,.55));
+}
+
+/* ─── DASHBOARD SHELL ─── */
+.dashboard{
+  position:relative;z-index:10;
+  width:100vw;height:100vh;
+  display:flex;flex-direction:column;
+  padding:6px;gap:5px;
+}
+
+/* ─── HEADER ─── */
+.dash-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(2,10,7,.92);
+  border:1px solid var(--pb);
+  border-radius:4px;padding:7px 14px;
+  flex-shrink:0;
+}
+.dh-left{font-size:.8rem;color:var(--txt2);letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+.dh-menu{font-size:1rem;color:var(--teal);cursor:pointer}
+.dh-center{text-align:center}
+.dh-sub{font-size:.68rem;color:var(--txt2)}
+.dh-main{
+  display:block;
+  font-family:'Noto Serif KR',serif;font-size:1.1rem;font-weight:900;
+  color:var(--gold-lt);letter-spacing:.12em;
+  text-shadow:0 0 20px rgba(240,208,96,.4);
+}
+.dh-right{
+  display:flex;align-items:center;gap:8px;
+  font-size:.7rem;color:var(--txt2);font-family:'Share Tech Mono',monospace;
+}
+.weather-box{
+  width:56px;height:34px;border-radius:3px;overflow:hidden;
+  border:1px solid rgba(0,160,110,.3);position:relative;
+  background:linear-gradient(135deg,#4ab8e8 0%,#2a8a58 100%);
+  display:flex;align-items:flex-end;justify-content:flex-end;padding:2px;
+}
+.weather-temp{font-size:.6rem;color:rgba(255,255,255,.9);font-family:'Noto Sans KR',sans-serif;font-weight:700}
+
+/* ─── 3-COLUMN BODY ─── */
+.dash-body{
+  display:grid;
+  grid-template-columns:270px 1fr 270px;
+  gap:5px;flex:1;min-height:0;
+}
+
+/* ─── PANEL BASE ─── */
+.panel{
+  background:var(--pbg);
+  border:1px solid var(--pb);
+  border-radius:4px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.panel-hdr{
+  background:rgba(0,28,18,.95);
+  border-bottom:1px solid var(--pb);
+  padding:5px 12px;text-align:center;
+  font-size:.65rem;letter-spacing:.25em;
+  color:var(--teal);font-weight:700;flex-shrink:0;
+  text-shadow:0 0 12px rgba(0,200,160,.6);
+}
+.panel-hdr.gold{color:var(--gold-lt);text-shadow:0 0 12px rgba(240,208,96,.5)}
+.panel-body{flex:1;overflow-y:auto;padding:8px;min-height:0}
+.panel-body::-webkit-scrollbar{width:2px}
+.panel-body::-webkit-scrollbar-thumb{background:var(--teal-dk);border-radius:2px}
+
+/* ─── SECTION BLOCKS ─── */
+.sec{
+  border:1px solid var(--pb2);border-radius:3px;
+  padding:7px 8px;margin-bottom:7px;
+}
+.sec-title{
+  font-size:.76rem;font-weight:700;color:var(--teal);
+  font-family:'Noto Serif KR',serif;margin-bottom:5px;
+  display:flex;align-items:baseline;gap:5px;
+}
+.sec-title .en{
+  font-family:'Noto Sans KR',sans-serif;font-size:.6rem;
+  color:var(--txt2);font-weight:300;
+}
+
+/* ─── SELECT ─── */
+select.sel{
+  width:100%;
+  background:rgba(0,30,20,.85);
+  border:1px solid rgba(0,150,100,.4);
+  border-radius:3px;
+  color:var(--txt);padding:5px 24px 5px 7px;
+  font-size:.76rem;font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;outline:none;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%2300c9a7'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 7px center;background-size:7px;
+}
+select.sel option{background:#071a10;color:var(--txt)}
+select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
+
+/* ─── MINI DIAL ─── */
+.dial-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.mini-dial{width:52px;height:52px;flex-shrink:0;position:relative}
+.mini-dial svg{width:100%;height:100%}
+.dial-val{
+  font-family:'Share Tech Mono',monospace;
+  font-size:1rem;color:var(--teal-lt);
+}
+.jiban-btn{
+  background:rgba(0,80,55,.35);border:1px solid rgba(0,150,100,.4);
+  border-radius:3px;color:var(--teal);
+  font-size:.65rem;padding:3px 7px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;transition:all .2s;
+}
+.jiban-btn:hover{background:rgba(0,150,100,.3);color:var(--teal-lt)}
+
+/* ─── WATER ROWS ─── */
+.wrow{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.wlabel{font-size:.62rem;color:var(--txt2);min-width:28px;flex-shrink:0}
+.wsel{flex:1;background:rgba(0,30,20,.85);border:1px solid rgba(0,150,100,.35);
+  border-radius:3px;color:var(--txt);padding:4px 20px 4px 5px;
+  font-size:.7rem;font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0l4 4 4-4z' fill='%2300c9a7'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 5px center;background-size:6px;
+}
+.wsel option{background:#071a10}
+.wdeg{
+  background:rgba(0,30,20,.85);border:1px solid rgba(0,150,100,.35);
+  border-radius:3px;color:var(--teal-lt);
+  font-size:.78rem;font-family:'Share Tech Mono',monospace;
+  width:46px;text-align:center;padding:4px 2px;border:1px solid rgba(0,150,100,.35);
+}
+.wicon{
+  background:rgba(0,80,55,.35);border:1px solid rgba(0,150,100,.35);
+  border-radius:3px;color:var(--teal);
+  width:22px;height:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;
+}
+
+/* ─── DATE / PERSON ─── */
+.date-row{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.dlabel{font-size:.62rem;color:var(--txt2);min-width:56px}
+.date-in{
+  background:rgba(0,30,20,.85);border:1px solid rgba(0,150,100,.35);
+  border-radius:3px;color:var(--txt);
+  font-size:.72rem;font-family:'Share Tech Mono',monospace;
+  padding:4px 6px;width:105px;outline:none;
+}
+.date-in:focus{border-color:var(--teal)}
+.myung-btn{
+  background:rgba(0,80,55,.35);border:1px solid rgba(0,150,100,.4);
+  border-radius:3px;color:var(--teal);
+  font-size:.62rem;padding:4px 7px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;transition:all .2s;white-space:nowrap;
+}
+.myung-btn:hover{color:var(--teal-lt)}
+.myung-result{
+  font-size:.7rem;color:var(--gold-lt);
+  font-family:'Noto Serif KR',serif;
+  margin-top:4px;min-height:18px;
+  transition:all .3s;
+}
+
+/* ─── SIM BUTTON ─── */
+.sim-wrap{padding:6px 8px;flex-shrink:0;border-top:1px solid var(--pb2)}
+.sim-btn{
+  width:100%;
+  background:linear-gradient(135deg,#083020,#1a6a40);
+  border:1.5px solid var(--teal);border-radius:5px;
+  color:#dfffef;font-size:.88rem;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;
+  padding:9px;cursor:pointer;letter-spacing:.06em;
+  transition:all .3s;
+  box-shadow:0 0 12px rgba(0,180,130,.25),inset 0 0 12px rgba(0,180,130,.08);
+  position:relative;overflow:hidden;
+}
+.sim-btn::after{
+  content:'';position:absolute;top:0;left:-120%;
+  width:80%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(0,230,180,.25),transparent);
+  transform:skewX(-20deg);
+  transition:left .6s ease;
+}
+.sim-btn:hover::after{left:130%}
+.sim-btn:hover{box-shadow:0 0 25px rgba(0,200,140,.5)}
+.sim-btn.running{animation:sbpulse 1s ease-in-out infinite}
+@keyframes sbpulse{0%,100%{box-shadow:0 0 12px rgba(0,200,140,.4)}50%{box-shadow:0 0 30px rgba(0,200,140,.75),0 0 50px rgba(0,200,140,.25)}}
+.sdot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--teal-lt);margin-left:6px;
+  vertical-align:middle;box-shadow:0 0 6px var(--teal);
+}
+
+/* ─── CENTER PANEL ─── */
+.center-body{
+  flex:1;display:flex;position:relative;
+  align-items:center;justify-content:center;
+  padding:8px;min-height:0; overflow:hidden;
+}
+#cmp-svg{
+  width:min(340px,85%);height:min(340px,85%);flex-shrink:0;
+  cursor:grab; transform-origin:center center;
+  /* transition removed for smooth panning, will be handled by JS */
+}
+#cmp-svg:active{cursor:grabbing;}
+.zoom-ctrl{
+  position:absolute;top:8px;right:8px;display:flex;gap:5px;z-index:20;
+}
+.zoom-btn{
+  background:rgba(0,30,20,.8);border:1px solid rgba(0,150,100,.5);
+  color:var(--teal-lt);border-radius:3px;padding:3px 7px;
+  font-size:1rem;cursor:pointer;transition:all 0.2s;line-height:1;
+}
+.zoom-btn:hover{background:rgba(0,150,100,.4);}
+
+
+/* Logic boxes */
+.logic-col{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:8px;
+}
+.lbox{
+  background:rgba(0,28,18,.92);
+  border:1px solid rgba(0,130,90,.45);
+  border-radius:4px;padding:5px 9px;
+  font-size:.65rem;font-weight:700;
+  color:var(--txt3);letter-spacing:.05em;
+  white-space:nowrap;min-width:105px;text-align:center;
+  transition:all .5s ease;position:relative;
+}
+.lbox::before{
+  content:'⟶';position:absolute;right:calc(100% + 3px);
+  top:50%;transform:translateY(-50%);
+  font-size:.75rem;color:rgba(0,200,150,.25);
+  transition:all .5s;
+}
+.lbox.lit{
+  border-color:var(--teal-lt);color:var(--teal-lt);
+  box-shadow:0 0 14px rgba(0,230,180,.4),inset 0 0 8px rgba(0,230,180,.1);
+}
+.lbox.lit::before{color:var(--teal);}
+.lbox.done{
+  border-color:var(--gold);color:var(--gold-lt);
+  box-shadow:0 0 10px rgba(200,169,62,.3);
+}
+.lbox.done::before{color:var(--gold);}
+
+/* Bottom labels */
+.center-bot{
+  position:absolute;bottom:8px;width:100%;
+  display:flex;align-items:flex-end;justify-content:center;
+  gap:10px;
+}
+.cbot-label{
+  font-size:.62rem;color:var(--txt2);letter-spacing:.2em;
+  display:flex;align-items:center;gap:5px;
+}
+.cbot-label::before,.cbot-label::after{
+  content:'◆';font-size:.45rem;color:var(--teal-dk);
+}
+
+/* Scan/flow line */
+@keyframes rotatescan{0%{transform:rotate(0deg) translateX(0)}100%{transform:rotate(360deg) translateX(0)}}
+.scan-grp.spinning{animation:rotatescan 2.5s linear infinite;transform-origin:150px 150px}
+
+/* ─── RIGHT PANEL ─── */
+.out-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,28,18,.95);border-bottom:1px solid var(--pb);
+  padding:5px 10px;flex-shrink:0;
+}
+.out-hdr-title{font-size:.62rem;color:var(--txt2);letter-spacing:.22em}
+.confirm-btn{
+  background:linear-gradient(135deg,var(--gold-dk),var(--gold));
+  border:none;border-radius:3px;color:#2a1800;
+  font-size:.66rem;font-weight:700;padding:3px 9px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  opacity:0;transition:opacity .6s ease;pointer-events:none;
+}
+.confirm-btn.on{opacity:1;pointer-events:all}
+
+/* Terrain */
+.terrain-wrap{
+  width:100%;height:110px;position:relative;
+  border:1px solid rgba(0,130,90,.3);border-radius:3px;
+  overflow:hidden;background:rgba(0,0,0,.35);margin:5px 0;
+}
+#terrain-svg{width:100%;height:100%}
+
+/* Coordinates */
+.coords{font-size:.62rem;color:var(--txt2);font-family:'Share Tech Mono',monospace;margin-bottom:3px}
+.coords strong{color:var(--teal)}
+.res-text{
+  font-size:.8rem;color:var(--gold-lt);
+  font-family:'Noto Serif KR',serif;
+  margin:4px 0;min-height:18px;transition:all .5s;
+}
+
+/* Energy */
+.erow{display:flex;align-items:center;gap:6px;margin:4px 0}
+.elab{font-size:.62rem;color:var(--txt2);min-width:32px}
+.etrack{flex:1;height:7px;background:rgba(0,0,0,.4);border:1px solid rgba(0,130,90,.3);border-radius:3px;overflow:hidden}
+.efill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#00aa80,var(--teal),#44ffdb);
+  border-radius:3px;transition:width 1.8s ease;
+  box-shadow:0 0 6px var(--teal);
+}
+.epct{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--teal-lt);min-width:32px;text-align:right}
+
+/* Divider */
+.divline{
+  border-bottom:1px solid var(--pb2);margin:6px 0;
+  font-size:.6rem;color:var(--txt3);letter-spacing:.18em;padding-bottom:4px;
+}
+
+/* 길흉 */
+.gh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px}
+.gh-item{
+  background:rgba(0,28,18,.8);border:1px solid rgba(0,120,80,.25);
+  border-radius:3px;padding:6px 3px;text-align:center;
+  font-size:.6rem;color:var(--txt3);
+  transition:all .6s ease;
+}
+.gh-item.on{
+  border-color:var(--gold);color:var(--gold-lt);
+  box-shadow:0 0 8px rgba(200,169,62,.3);
+}
+.gh-icon{font-size:.95rem;display:block;margin-bottom:2px}
+.gh-txt{display:block;font-size:.6rem;line-height:1.3}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fadeup{animation:fadeup .5s ease forwards}
+
+/* Pulsing flow arrows on SVG */
+@keyframes dashmove{to{stroke-dashoffset:-20}}
+.flow-anim{stroke-dasharray:5 4;animation:dashmove .6s linear infinite}
+
+/* ─── TOOLTIP ─── */
+.tip-overlay{
+  position:fixed;background:rgba(2,12,8,.95);
+  border:1px solid var(--pb);border-radius:4px;
+  padding:4px 9px;font-size:.68rem;color:var(--teal-lt);
+  pointer-events:none;z-index:500;white-space:nowrap;display:none;
+}
+
+/* ─── POPUP / MODAL ─── */
+.modal-bg {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,10,5,.8); backdrop-filter:blur(3px); z-index:9998;
+}
+.modal-box {
+  display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+  width:95%; max-width:380px; background:#081812;
+  border:1px solid var(--teal); border-radius:6px; box-shadow:0 0 20px rgba(0,255,180,.15);
+  z-index:9999; padding:12px; font-family:'Noto Serif KR',serif; color:var(--txt);
+}
+.modal-hdr {
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid var(--teal-dk); padding-bottom:10px; margin-bottom:10px;
+}
+.modal-title { font-size:1rem; color:var(--gold-lt); font-weight:700; }
+.modal-close {
+  background:none; border:none; color:var(--txt2); font-size:1.2rem; cursor:pointer;
+  line-height:1; transition:color .3s;
+}
+.modal-close:hover { color:var(--red); }
+.modal-body { font-size:0.75rem; line-height:1.6; color:var(--txt); max-height:60vh; overflow-y:auto; }
+.modal-body strong { color:var(--teal-lt); }
+.modal-body .highlight { color:var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="nature-bg"></div>
+<div class="tip-overlay" id="tooltip"></div>
+
+<!-- POPUP MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closePopup()"></div>
+<div class="modal-box" id="info-modal">
+  <div class="modal-hdr">
+    <div class="modal-title" id="modal-title">1층 용상팔살 (龍上八殺)</div>
+    <button class="modal-close" onclick="closePopup()">×</button>
+  </div>
+  <div class="modal-body" id="modal-content">
+    <!-- 내용이 JS로 주입됩니다 -->
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- ─── HEADER ─── -->
+  <header class="dash-hdr">
+    <div class="dh-left">
+      <span class="dh-menu">☰</span>
+      <span id="city-name">화성시</span>
+    </div>
+    <div class="dh-center">
+      <span class="dh-sub">이기풍수</span>
+      <span class="dh-main">감결</span>
+    </div>
+    <div class="dh-right">
+      <span id="loc-txt">37.2°N &nbsp;126.8°E</span>
+      <div class="weather-box">
+        <span class="weather-temp">맑음</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── BODY ─── -->
+  <div class="dash-body">
+
+    <!-- ════ LEFT: DATA INPUT ════ -->
+    <div class="panel">
+      <div class="panel-hdr">DATA INPUT</div>
+      <div class="panel-body">
+
+        <!-- 1. 龍脈 -->
+        <div class="sec">
+          <div class="sec-title">1. 龍脈 <span class="en">Dragon Vein</span></div>
+          <select class="sel" id="sel-dragon" onchange="onDragonChange()">
+            <option value="">— 입수룡 선택 —</option>
+          </select>
+          <div class="dial-row">
+            <div class="mini-dial" id="dragon-dial">
+              <svg id="dial-svg" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
+            <div style="flex:1">
+              <select class="wsel" id="sel-site-type" style="width:100%; font-size:0.75rem; margin-top:2px" onchange="toggleYangtaekInputs()">
+                <option value="yang">양택(陽宅):人命擇日</option>
+                <option value="eum">음택(陰宅)</option>
+              </select>
+            </div>
+          </div>
+          <div id="yangtaek-inputs" style="margin-top:6px; display:flex; flex-wrap:wrap; gap:10px">
+            <div style="flex:1; min-width:80px">
+              <span class="dlabel" style="font-size:0.55rem">대문(門) 방위</span>
+              <select class="wsel" id="sel-gate" style="width:100%"></select>
+            </div>
+            <div style="flex:1; min-width:80px">
+              <span class="dlabel" style="font-size:0.55rem">안방(主) 방위</span>
+              <select class="wsel" id="sel-master" style="width:100%"></select>
+            </div>
+            <div style="flex:1; min-width:80px">
+              <span class="dlabel" style="font-size:0.55rem">부엌(灶) 방위</span>
+              <select class="wsel" id="sel-kitchen" style="width:100%"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 水流 -->
+        <div class="sec">
+          <div class="sec-title">2. 좌선수/우선수</div>
+          <div class="wrow">
+            <span class="wlabel">득수</span>
+            <select class="wsel" id="sel-shui" onchange="onShuiChange()">
+              <option value="">없음</option>
+            </select>
+          </div>
+          <div class="wrow">
+            <span class="wlabel">파구</span>
+            <select class="wsel" id="sel-pagu" onchange="onPaguChange()">
+              <option value="">없음</option>
+            </select>
+            <div style="display:flex;align-items:center;gap:3px;margin-left:auto">
+              <select class="wsel" id="sel-rotation" style="width:68px;font-size:0.6rem;height:20px;padding:0 2px">
+                <option value="left">좌선수</option>
+                <option value="right">우선수</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 人命 -->
+        <div class="sec">
+          <div class="sec-title">3. 人命 <span class="en">Person</span></div>
+          <div class="date-row">
+            <span class="dlabel">생년월일</span>
+            <input class="date-in" type="date" id="birth-date" value="1970-10-15" onchange="onBirthChange()">
+          </div>
+          <div class="date-row" style="margin-top:4px">
+            <select class="wsel" id="sel-calendar" style="width:76px; font-size:0.6rem" onchange="onBirthChange()">
+              <option value="solar">양력(陽)</option>
+              <option value="lunar">음력(陰)</option>
+              <option value="leap">윤달(閏)</option>
+            </select>
+            <select class="wsel" id="sel-gender" style="width:60px; margin-left:10px" onchange="onBirthChange()">
+              <option value="">모름</option>
+              <option value="m">남(男)</option>
+              <option value="f">여(女)</option>
+            </select>
+          </div>
+          <div class="myung-result" id="myung-result" style="margin-top:8px"></div>
+        </div>
+
+        <!-- 4. 擇日 -->
+        <div class="sec">
+          <div class="sec-title">4. 擇日 <span class="en">Taik-il</span></div>
+          <div class="date-row">
+            <span class="dlabel">분석 일자</span>
+            <input class="date-in" type="date" id="taikil-date">
+          </div>
+        </div>
+
+      </div><!-- panel-body -->
+
+      <!-- SIM BUTTON -->
+      <div class="sim-wrap">
+        <button class="sim-btn" id="sim-btn" onclick="runSimulation()">
+          가상 시뮬레이션 가동<span class="sdot"></span>
+        </button>
+      </div>
+    </div><!-- LEFT panel -->
+
+
+    <!-- ════ CENTER: LOGIC ENGINE ════ -->
+    <div class="panel">
+      <div class="panel-hdr">LOGIC ENGINE</div>
+      <div class="center-body" id="cmp-container">
+
+        <!-- Zoom Controls -->
+        <div class="zoom-ctrl">
+          <button class="zoom-btn" onclick="zoomCmp(0.2)" title="확대">＋</button>
+          <button class="zoom-btn" onclick="zoomCmp(-0.2)" title="축소">－</button>
+          <button class="zoom-btn" onclick="resetZoom()" title="초기화">⟲</button>
+        </div>
+
+        <!-- Main compass SVG -->
+        <svg id="cmp-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- built by JS -->
+        </svg>
+
+        <!-- 9층 Legend -->
+        <div id="paecheol-legend" style="
+          display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;
+          padding:4px 6px;margin:3px 0;
+          background:rgba(0,20,10,.6);border:1px solid rgba(0,150,90,.25);
+          border-radius:4px;font-size:0.56rem;font-family:'Noto Serif KR',serif;
+        ">
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(1)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(200,80,80,.8);display:inline-block"></span>
+            <span style="color:rgba(200,80,80,.9);text-decoration:underline;">1층</span>
+            <span style="color:var(--gold-lt)">용상팔살</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(2)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(200,200,80,.7);display:inline-block"></span>
+            <span style="color:rgba(200,200,80,.9);text-decoration:underline;">2층</span>
+            <span style="color:var(--txt2)">팔요풍 방향</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(3)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(30,110,50,.8);display:inline-block"></span>
+            <span style="color:rgba(100,220,130,.9);text-decoration:underline;">3층</span>
+            <span style="color:var(--txt2)">3합오행 운용</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(4)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#f0d060;display:inline-block"></span>
+            <span style="color:#f0d060;text-decoration:underline;">4층</span>
+            <span style="color:var(--txt2)">래용·양택입향</span>
+            <span style="color:#f0d060;font-size:0.5rem">龍▲</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(5)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(0,150,90,.4);display:inline-block"></span>
+            <span style="color:rgba(0,200,130,.8);text-decoration:underline;">5층</span>
+            <span style="color:var(--txt2)">천산 72룡</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(6)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(150,220,255,.8);display:inline-block"></span>
+            <span style="color:rgba(150,220,255,.9);text-decoration:underline;">6층</span>
+            <span style="color:var(--txt2)">인문 사봉</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(7)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(0,150,90,.3);display:inline-block"></span>
+            <span style="color:rgba(0,200,130,.8);text-decoration:underline;">7층</span>
+            <span style="color:var(--txt2)">투지 60룡</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="openLayerInfo(8)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(255,200,150,.9);display:inline-block"></span>
+            <span style="color:rgba(255,200,150,.9);text-decoration:underline;">8층</span>
+            <span style="color:#00ffcc">得</span>
+            <span style="color:#ff7070">破▲</span>
+            <span style="color:#ce99ff">向▲</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;grid-column:1/-1;cursor:pointer;" onclick="openLayerInfo(9)">
+            <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:rgba(0,180,120,.5);display:inline-block"></span>
+            <span style="color:rgba(0,200,150,.8);text-decoration:underline;">9층</span>
+            <span style="color:var(--txt2)">봉침분금 (120분금)</span>
+          </div>
+        </div>
+
+
+
+        <!-- Bottom -->
+        <div class="center-bot">
+          <div class="cbot-label">지반정침 (4층) · 천반봉침 (8층)</div>
+        </div>
+      </div>
+    </div><!-- CENTER panel -->
+
+
+    <!-- ════ RIGHT: OUTPUT RESULT ════ -->
+    <div class="panel">
+      <div class="out-hdr">
+        <span class="out-hdr-title">OUTPUT RESULT</span>
+        <span style="font-size:.65rem;color:var(--txt2)">최종 정혈</span>
+        <button class="confirm-btn" id="confirm-btn">확정</button>
+      </div>
+      <div class="panel-body">
+
+        <!-- Terrain -->
+        <div class="terrain-wrap">
+          <svg id="terrain-svg" viewBox="0 0 270 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- built by JS -->
+          </svg>
+        </div>
+
+        <div class="coords" id="coords-txt">穴 <strong>37.311 N</strong>, <strong>126.821 E</strong></div>
+        <div class="res-text" id="res-text">—</div>
+
+        <div class="erow">
+          <span class="elab">에너지</span>
+          <div class="etrack"><div class="efill" id="efill"></div></div>
+          <span class="epct" id="epct">—</span>
+        </div>
+
+        <div class="divline">길흉 판단</div>
+        <div class="gh-grid">
+          <div class="gh-item" id="gh1">
+            <span class="gh-icon">🌿</span>
+            <span class="gh-txt">자손<br>번창</span>
+          </div>
+          <div class="gh-item" id="gh2">
+            <span class="gh-icon">💰</span>
+            <span class="gh-txt">부귀<br>영화</span>
+          </div>
+          <div class="gh-item" id="gh3">
+            <span class="gh-icon">🏺</span>
+            <span class="gh-txt">무병<br>장수</span>
+          </div>
+        </div>
+
+        <div class="divline" style="margin-top:6px">분석 결과</div>
+
+        <!-- 분석 결과 카드 -->
+        <div id="analysis-result" style="
+          font-size:0.62rem;font-family:'Share Tech Mono',monospace;
+          background:rgba(0,20,10,.5);border:1px solid rgba(0,150,90,.2);
+          border-radius:4px;padding:6px 8px;margin-bottom:6px;
+          line-height:1.8;min-height:40px;display:none;
+        ">
+          <!-- JS로 채워짐 -->
+        </div>
+
+        <div class="divline" style="margin-top:2px">감결 로그</div>
+        <div id="log-area" style="font-size:.62rem;color:var(--txt2);line-height:1.7;font-family:'Share Tech Mono',monospace;min-height:60px"></div>
+
+      </div>
+    </div><!-- RIGHT panel -->
+
+  </div><!-- dash-body -->
+</div><!-- dashboard -->
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════ */
+const DIR24 = [
+  {char:'壬',kor:'임',rom:'Im',    palace:'坎',gp:'감',deg:345,elem:'水'},
+  {char:'子',kor:'자',rom:'Ja',    palace:'坎',gp:'감',deg:0,  elem:'水'},
+  {char:'癸',kor:'계',rom:'Gye',   palace:'坎',gp:'감',deg:15, elem:'水'},
+  {char:'丑',kor:'축',rom:'Chuk',  palace:'艮',gp:'간',deg:30, elem:'土'},
+  {char:'艮',kor:'간',rom:'Gan',   palace:'艮',gp:'간',deg:45, elem:'土'},
+  {char:'寅',kor:'인',rom:'In',    palace:'艮',gp:'간',deg:60, elem:'土'},
+  {char:'甲',kor:'갑',rom:'Gap',   palace:'震',gp:'진',deg:75, elem:'木'},
+  {char:'卯',kor:'묘',rom:'Myo',   palace:'震',gp:'진',deg:90, elem:'木'},
+  {char:'乙',kor:'을',rom:'Eul',   palace:'震',gp:'진',deg:105,elem:'木'},
+  {char:'辰',kor:'진',rom:'Jin',   palace:'巽',gp:'손',deg:120,elem:'木'},
+  {char:'巽',kor:'손',rom:'Son',   palace:'巽',gp:'손',deg:135,elem:'木'},
+  {char:'巳',kor:'사',rom:'Sa',    palace:'巽',gp:'손',deg:150,elem:'火'},
+  {char:'丙',kor:'병',rom:'Byeong',palace:'離',gp:'이',deg:165,elem:'火'},
+  {char:'午',kor:'오',rom:'O',     palace:'離',gp:'이',deg:180,elem:'火'},
+  {char:'丁',kor:'정',rom:'Jeong', palace:'離',gp:'이',deg:195,elem:'火'},
+  {char:'未',kor:'미',rom:'Mi',    palace:'坤',gp:'곤',deg:210,elem:'土'},
+  {char:'坤',kor:'곤',rom:'Gon',   palace:'坤',gp:'곤',deg:225,elem:'土'},
+  {char:'申',kor:'신',rom:'Sin',   palace:'坤',gp:'곤',deg:240,elem:'土'},
+  {char:'庚',kor:'경',rom:'Gyeong',palace:'兌',gp:'태',deg:255,elem:'金'},
+  {char:'酉',kor:'유',rom:'Yu',    palace:'兌',gp:'태',deg:270,elem:'金'},
+  {char:'辛',kor:'신2',rom:'Sin2', palace:'兌',gp:'태',deg:285,elem:'金'},
+  {char:'戌',kor:'술',rom:'Sul',   palace:'乾',gp:'건',deg:300,elem:'金'},
+  {char:'乾',kor:'건',rom:'Geon',  palace:'乾',gp:'건',deg:315,elem:'金'},
+  {char:'亥',kor:'해',rom:'Hae',   palace:'乾',gp:'건',deg:330,elem:'水'},
+];
+
+const ELEM_COLOR = {
+  '水':'rgba(30,80,160,.55)',
+  '木':'rgba(30,110,50,.55)',
+  '火':'rgba(140,30,30,.55)',
+  '土':'rgba(110,85,20,.55)',
+  '金':'rgba(80,100,90,.55)',
+};
+const ELEM_STROKE = {
+  '水':'#3060c0','木':'#30a040',
+  '火':'#c04040','土':'#c0a030','金':'#80b090',
+};
+
+const TRIGRAMS = {
+  '坎':'☵','艮':'☶','震':'☳','巽':'☴','離':'☲','坤':'☷','兌':'☱','乾':'☰'
+};
+
+const PALSAL = {
+  '坎':'庚','艮':'丁','震':'坤',
+  '巽':'庚','離':'壬','坤':'甲','兌':'艮','乾':'丙'
+};
+
+const BUREAU_FOR_PALACE = {
+  '坎':'火','艮':'水','震':'金','巽':'木',
+  '離':'水','坤':'火','兌':'木','乾':'金'
+};
+
+// 파구(破口) 방위로 국(局)을 직접 판별
+// 수국: 乙辰·巽巳·丙午 / 목국: 丁未·坤申·庚酉 / 화국: 辛戌·乾亥·壬子 / 금국: 癸丑·艮寅·甲卯
+const PAGU_BUREAU = {
+  '乙':'水','辰':'水','巽':'水','巳':'水','丙':'水','午':'水',
+  '丁':'木','未':'木','坤':'木','申':'木','庚':'木','酉':'木',
+  '辛':'火','戌':'火','乾':'火','亥':'火','壬':'火','子':'火',
+  '癸':'金','丑':'金','艮':'金','寅':'金','甲':'金','卯':'金'
+};
+
+// 국별 파구 대표 방위 표기
+const PAGU_BUREAU_DIRS = {
+  '水':'乙辰·巽巳·丙午','木':'丁未·坤申·庚酉',
+  '火':'辛戌·乾亥·壬子','金':'癸丑·艮寅·甲卯'
+};
+
+// 파구 방위별 파(破) 유형 — 12포태 단계 기준
+// 墓破(묘파): 辰/未/戌/丑,  絕破(절파): 巽/坤/乾/艮,  胎破(태파): 丙/庚/壬/甲
+// 인접 보조방(乙·巳·丁·申·辛·亥·癸·寅·甲·卯/午·酉·子)도 같은 그룹으로 귀속
+
+// 24산 범주: 천간(天干) 8자 · 지지(地支) 12자 · 팔괘(八卦) 4자
+// ※ 팔괘방(艮·巽·坤·乾)은 천간과 동급으로 천간파로 분류
+const CHAR_CATEGORY = {
+  '壬':'천간','癸':'천간','甲':'천간','乙':'천간',
+  '丙':'천간','丁':'천간','庚':'천간','辛':'천간',
+  '子':'지지','丑':'지지','寅':'지지','卯':'지지',
+  '辰':'지지','巳':'지지','午':'지지','未':'지지',
+  '申':'지지','酉':'지지','戌':'지지','亥':'지지',
+  '艮':'천간','巽':'천간','坤':'천간','乾':'천간'
+};
+
+// 파구 방위별 파(破) 유형: { type: 파유형, sub: 세분류 }
+const PAGU_NAME = {
+  // 水局
+  '乙':{type:'묘파(墓破)',sub:'천간파(天干破)'},
+  '辰':{type:'묘파(墓破)',sub:'지지파(地支破)'},
+  '巽':{type:'절파(絕破)',sub:'천간파(天干破)'},
+  '巳':{type:'절파(絕破)',sub:'지지파(地支破)'},
+  '丙':{type:'태파(胎破)',sub:'천간파(天干破)'},
+  '午':{type:'태파(胎破)',sub:'지지파(地支破)'},
+  // 木局
+  '丁':{type:'묘파(墓破)',sub:'천간파(天干破)'},
+  '未':{type:'묘파(墓破)',sub:'지지파(地支破)'},
+  '坤':{type:'절파(絕破)',sub:'천간파(天干破)'},
+  '申':{type:'절파(絕破)',sub:'지지파(地支破)'},
+  '庚':{type:'태파(胎破)',sub:'천간파(天干破)'},
+  '酉':{type:'태파(胎破)',sub:'지지파(地支破)'},
+  // 火局
+  '辛':{type:'묘파(墓破)',sub:'천간파(天干破)'},
+  '戌':{type:'묘파(墓破)',sub:'지지파(地支破)'},
+  '乾':{type:'절파(絕破)',sub:'천간파(天干破)'},
+  '亥':{type:'절파(絕破)',sub:'지지파(地支破)'},
+  '壬':{type:'태파(胎破)',sub:'천간파(天干破)'},
+  '子':{type:'태파(胎破)',sub:'지지파(地支破)'},
+  // 金局
+  '癸':{type:'묘파(墓破)',sub:'천간파(天干破)'},
+  '丑':{type:'묘파(墓破)',sub:'지지파(地支破)'},
+  '艮':{type:'절파(絕破)',sub:'천간파(天干破)'},
+  '寅':{type:'절파(絕破)',sub:'지지파(地支破)'},
+  '甲':{type:'태파(胎破)',sub:'천간파(天干破)'},
+  '卯':{type:'태파(胎破)',sub:'지지파(地支破)'}
+};
+
+const BUREAU_LABEL = {
+  '木':'木局 · 亥卯未(丁未·坤申·庚酉 파구)','火':'火局 · 寅午戌(辛戌·乾亥·壬子 파구)',
+  '金':'金局 · 巳酉丑(癸丑·艮寅·甲卯 파구)','水':'水局 · 申子辰(乙辰·巽巳·丙午 파구)'
+};
+
+/* ─── 파(破)의 4단계 중요성 체계 ───
+  [1단계 90°] 국(局) 구분   → 수국·목국·화국·금국
+  [2단계 30°] 향법(向法) 결정 → 묘파·절파·태파
+  [3단계 15°] 방향(方向) 결정 → 천간파=천간향 / 지지파=지지향
+  [4단계  0°] 패철 정혈      → 천간파=영록(正祿) / 지지파=차록(次祿, 발복 반감)
+─────────────────────────────── */
+
+// 2단계: 파 유형별 권장 향법
+const PAGU_HYANG = {
+  '묘파(墓破)': {
+    hyang: '정생향(正生向) · 정왕향(正旺向)',
+    desc:  '양기(陽氣)를 취하여 생·왕방으로 향함 — 재물·관록 풍성'
+  },
+  '절파(絕破)': {
+    hyang: '자생향(自生向) — 절처봉생(絕處逢生)',
+    desc:  '절에서 흘러 생(生)으로 향함 — 자손 번창·새 출발에 유리'
+  },
+  '태파(胎破)': {
+    hyang: '양향(養向) — 태류태향(胎流胎向)',
+    desc:  '태(胎)에서 양(養)으로 향함 — 장수·건강·발복 지속에 유리'
+  }
+};
+
+// 4단계: 세분류별 록(祿) 등급
+const PAGU_ROK = {
+  '천간파(天干破)': {
+    rok:  '영록(正祿) ●',
+    desc: '정방(正方)에서 수기 직접 하강 — 발복이 온전하고 왕성'
+  },
+  '지지파(地支破)': {
+    rok:  '차록(次祿) ○',
+    desc: '인접방에서 수기 간접 유입 — 발복이 반감되며 더딤'
+  }
+};
+
+/* ─── 향법 판단 등급표 (向法 判斷 等級表) ───
+   출처: 이미지 6)향법 판단
+   정발록향법(正發祿向法): 정생향·정왕향 → 영록(正祿), 10대 이내 발복
+   차발록향법(次發祿向法): 자생향·양향   → 차록(次祿), 발복 반감
+   삼발록향법(三發祿向法): 자왕향·충양향 → 삼록(三祿), 3대 이내 단기 발복
+──────────────────────────── */
+const HYANG_GRADE = {
+  '정생향(正生向)': { grade:'정발록(正發祿)', rank:1, desc:'영록(正祿) · 10대 이내 발복 · 관록·재물 왕성' },
+  '정왕향(正旺向)': { grade:'정발록(正發祿)', rank:1, desc:'영록(正祿) · 10대 이내 발복 · 재물 풍성' },
+  '자생향(自生向) — 절처봉생(絕處逢生)': { grade:'차발록(次發祿)', rank:2, desc:'차록(次祿) · 자손번창 · 관직 발복' },
+  '자생향(自生向)': { grade:'차발록(次發祿)', rank:2, desc:'차록(次祿) · 자손번창 · 발복 반감' },
+  '양향(養向)': { grade:'차발록(次發祿)', rank:2, desc:'차록(次祿) · 장수·건강 발복 지속' },
+  '충양향(沖養向)': { grade:'삼발록(三發祿)', rank:3, desc:'삼록(三祿) · 3대 이내 단기 발복 · 건강 위주' },
+  '자왕향(自旺向)': { grade:'삼발록(三發祿)', rank:3, desc:'삼록(三祿) · 3대 이내 단기 발복 · 재물 위주' }
+};
+
+
+/* ─── 득수(得水) 포태 단계별 권장 향법 ───
+   출처: 이미지 12포태향 조견표 / 水局의 12포태향
+   구조: DEUKSU_HYANG[국][포태단계] = { hyangName, jwaHyang[], grade }
+   長生/帝旺 득수 → 정발록(正發祿) / 冠帶/臨官 득수 → 차발록(次發祿)
+──────────────────────────────── */
+const DEUKSU_HYANG = {
+  '水': {
+    '長生': { hyangName:'정생향(正生向)', jwaHyang:['壬坐丙向','子坐午向','癸坐丁向'], grade:'정발록' },
+    '冠帶': { hyangName:'관대향(冠帶向)', jwaHyang:['戌坐辰向','乾坐巽向'],            grade:'차발록' },
+    '臨官': { hyangName:'임관향(臨官向)', jwaHyang:['乾坐巽向','亥坐巳向'],            grade:'차발록' },
+    '帝旺': { hyangName:'정왕향(正旺向)', jwaHyang:['庚坐甲向','酉坐卯向','辛坐乙向'], grade:'정발록' }
+  },
+  '木': {
+    '長生': { hyangName:'정생향(正生向)', jwaHyang:['甲坐庚向','卯坐酉向','乙坐辛向'], grade:'정발록' },
+    '冠帶': { hyangName:'관대향(冠帶向)', jwaHyang:['丑坐未向','艮坐坤向'],            grade:'차발록' },
+    '臨官': { hyangName:'임관향(臨官向)', jwaHyang:['艮坐坤向','寅坐申向'],            grade:'차발록' },
+    '帝旺': { hyangName:'정왕향(正旺向)', jwaHyang:['壬坐丙向','子坐午向','癸坐丁向'], grade:'정발록' }
+  },
+  '火': {
+    '長生': { hyangName:'정생향(正生向)', jwaHyang:['丙坐壬向','午坐子向','丁坐癸向'], grade:'정발록' },
+    '冠帶': { hyangName:'관대향(冠帶向)', jwaHyang:['辰坐戌向','巽坐乾向'],            grade:'차발록' },
+    '臨官': { hyangName:'임관향(臨官向)', jwaHyang:['巽坐乾向','巳坐亥向'],            grade:'차발록' },
+    '帝旺': { hyangName:'정왕향(正旺向)', jwaHyang:['甲坐庚向','卯坐酉向','乙坐辛向'], grade:'정발록' }
+  },
+  '金': {
+    '長生': { hyangName:'정생향(正生向)', jwaHyang:['庚坐甲向','酉坐卯向','辛坐乙向'], grade:'정발록' },
+    '冠帶': { hyangName:'관대향(冠帶向)', jwaHyang:['未坐丑向','坤坐艮向'],            grade:'차발록' },
+    '臨官': { hyangName:'임관향(臨官向)', jwaHyang:['坤坐艮向','申坐寅向'],            grade:'차발록' },
+    '帝旺': { hyangName:'정왕향(正旺向)', jwaHyang:['丙坐壬向','午坐子向','丁坐癸向'], grade:'정발록' }
+  }
+};
+
+/* ─── 향법 운용표 (4국 × 파유형 × 천간/지지파) ───
+   출처: 풍수 이기론 향법 운용 분류표
+   구조: HYANG_TABLE[국][파유형][세분류] = { hyangName, jwaHyang[], condition, palbok }
+──────────────────────────────────────────── */
+
+const HYANG_TABLE = {
+  '水': { // 수국 삼합: 申子辰  |  長生:申  帝旺:子  墓:辰
+    '묘파(墓破)': {
+      '천간파(天干破)': {
+        hyangName: '정생향(正生向)',
+        jwaHyang:  ['壬坐丙向', '子坐午向', '癸坐丁向'],
+        condition: '坤·申방 득수(長生·임관) 필요',
+        palbok:    '관록·재물 왕성 · 10대 이내 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '정왕향(正旺向)',
+        jwaHyang:  ['庚坐甲向', '酉坐卯向', '辛坐乙向'],
+        condition: '乾·亥방 득수(臨官) 필요',
+        palbok:    '재물 풍성 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '절파(絕破)': {
+      '천간파(天干破)': {
+        hyangName: '자생향(自生向) — 절처봉생(絕處逢生)',
+        jwaHyang:  ['戌坐辰向', '乾坐巽向', '亥坐巳向'],
+        condition: '坤·申방 득수(長生·帝旺) 필요',
+        palbok:    '자손번창·관직 발복 · 10대 이내 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '자생향(自生向)',
+        jwaHyang:  ['戌坐辰向', '乾坐巽向'],
+        condition: '생방(坤申) 득수 필요',
+        palbok:    '자손번창 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '태파(胎破)': {
+      '천간파(天干破)': {
+        hyangName: '양향(養向)',
+        jwaHyang:  ['壬坐丙向', '子坐午向'],
+        condition: '申방 득수(長生) 필요',
+        palbok:    '장수·건강·발복 지속 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '충양향(沖養向)',
+        jwaHyang:  ['坤坐艮向', '申坐寅向'],
+        condition: '양방(午) 득수 필요',
+        palbok:    '건강 발복 · 반감 · 차록(次祿)'
+      }
+    }
+  },
+  '木': { // 목국 삼합: 亥卯未  |  長生:亥  帝旺:卯  墓:未
+    '묘파(墓破)': {
+      '천간파(天干破)': {
+        hyangName: '정생향(正生向)',
+        jwaHyang:  ['甲坐庚向', '卯坐酉向', '乙坐辛向'],
+        condition: '乾·亥방 득수(長生) 필요',
+        palbok:    '관록·재물 왕성 · 10대 이내 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '정왕향(正旺向)',
+        jwaHyang:  ['壬坐丙向', '子坐午向', '癸坐丁向'],
+        condition: '임수·丑방 득수(沐浴·冠帶) 필요',
+        palbok:    '재물 풍성 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '절파(絕破)': {
+      '천간파(天干破)': {
+        hyangName: '자생향(自生向) — 절처봉생(絕處逢生)',
+        jwaHyang:  ['丑坐未向', '艮坐坤向', '寅坐申向'],
+        condition: '乾·亥방 득수(長生·帝旺) 필요',
+        palbok:    '자손번창·관직 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '자생향(自生向)',
+        jwaHyang:  ['丑坐未向', '艮坐坤向'],
+        condition: '생방(亥) 득수 필요',
+        palbok:    '자손번창 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '태파(胎破)': {
+      '천간파(天干破)': {
+        hyangName: '양향(養向)',
+        jwaHyang:  ['甲坐庚向', '卯坐酉向'],
+        condition: '亥방 득수(長生) 필요',
+        palbok:    '장수·건강·발복 지속 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '충양향(沖養向)',
+        jwaHyang:  ['乾坐巽向', '亥坐巳向'],
+        condition: '양방(酉) 득수 필요',
+        palbok:    '건강 발복 · 반감 · 차록(次祿)'
+      }
+    }
+  },
+  '火': { // 화국 삼합: 寅午戌  |  長生:寅  帝旺:午  墓:戌
+    '묘파(墓破)': {
+      '천간파(天干破)': {
+        hyangName: '정생향(正生向)',
+        jwaHyang:  ['丙坐壬向', '午坐子向', '丁坐癸向'],
+        condition: '甲·寅방 득수(長生) 필요',
+        palbok:    '관록·재물 왕성 · 10대 이내 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '정왕향(正旺向)',
+        jwaHyang:  ['甲坐庚向', '卯坐酉向', '乙坐辛向'],
+        condition: '巽방 득수(臨官) 필요',
+        palbok:    '재물 풍성 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '절파(絕破)': {
+      '천간파(天干破)': {
+        hyangName: '자생향(自生向) — 절처봉생(絕處逢生)',
+        jwaHyang:  ['未坐丑向', '坤坐艮向', '申坐寅向'],
+        condition: '甲·寅방 득수(長生·帝旺) 필요',
+        palbok:    '자손번창·관직 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '자생향(自生向)',
+        jwaHyang:  ['未坐丑向', '坤坐艮向'],
+        condition: '생방(寅) 득수 필요',
+        palbok:    '자손번창 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '태파(胎破)': {
+      '천간파(天干破)': {
+        hyangName: '양향(養向)',
+        jwaHyang:  ['丙坐壬向', '午坐子向'],
+        condition: '寅방 득수(長生) 필요',
+        palbok:    '장수·건강·발복 지속 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '충양향(沖養向)',
+        jwaHyang:  ['甲坐庚向', '寅坐申向'],
+        condition: '양방(子) 득수 필요',
+        palbok:    '건강 발복 · 반감 · 차록(次祿)'
+      }
+    }
+  },
+  '金': { // 금국 삼합: 巳酉丑  |  長生:巳  帝旺:酉  墓:丑
+    '묘파(墓破)': {
+      '천간파(天干破)': {
+        hyangName: '정생향(正生向)',
+        jwaHyang:  ['庚坐甲向', '酉坐卯向', '辛坐乙向'],
+        condition: '丙·巳방 득수(長生) 필요',
+        palbok:    '관록·재물 왕성 · 10대 이내 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '정왕향(正旺向)',
+        jwaHyang:  ['丙坐壬向', '午坐子向', '丁坐癸向'],
+        condition: '坤방 득수(臨官) 필요',
+        palbok:    '재물 풍성 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '절파(絕破)': {
+      '천간파(天干破)': {
+        hyangName: '자생향(自生向) — 절처봉생(絕處逢生)',
+        jwaHyang:  ['辰坐戌向', '巽坐乾向', '巳坐亥向'],
+        condition: '丙·巳방 득수(長生·帝旺) 필요',
+        palbok:    '자손번창·관직 발복 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '자생향(自生向)',
+        jwaHyang:  ['辰坐戌向', '巽坐乾向'],
+        condition: '생방(巳) 득수 필요',
+        palbok:    '자손번창 · 발복 반감 · 차록(次祿)'
+      }
+    },
+    '태파(胎破)': {
+      '천간파(天干破)': {
+        hyangName: '양향(養向)',
+        jwaHyang:  ['庚坐甲向', '酉坐卯向'],
+        condition: '巳방 득수(長生) 필요',
+        palbok:    '장수·건강·발복 지속 · 영록(正祿)'
+      },
+      '지지파(地支破)': {
+        hyangName: '충양향(沖養向)',
+        jwaHyang:  ['丙坐壬向', '巳坐亥向'],
+        condition: '양방(卯) 득수 필요',
+        palbok:    '건강 발복 · 반감 · 차록(次祿)'
+      }
+    }
+  }
+};
+
+const PORTAE = {
+  '木':{亥:'長生',壬:'沐浴',丑:'冠帶',艮:'臨官',卯:'帝旺',甲:'衰',巽:'病',巳:'死',未:'墓',坤:'絕',庚:'胎',酉:'養'},
+  '火':{寅:'長生',甲:'沐浴',辰:'冠帶',巽:'臨官',午:'帝旺',丁:'衰',坤:'病',申:'死',戌:'墓',乾:'絕',壬:'胎',子:'養'},
+  '金':{巳:'長生',丙:'沐浴',未:'冠帶',坤:'臨官',酉:'帝旺',辛:'衰',乾:'病',亥:'死',丑:'墓',艮:'絕',甲:'胎',卯:'養'},
+  '水':{申:'長生',庚:'沐浴',戌:'冠帶',乾:'臨官',子:'帝旺',癸:'衰',丑:'病',艮:'死',辰:'墓',巽:'絕',丙:'胎',午:'養'}
+};
+
+const GOOD_SHUI = new Set(['長生','冠帶','臨官','帝旺']);
+const GOOD_PAGU  = new Set(['墓','衰']);
+
+const DIR_PAIRS = {
+  '坎':{desc:'壬坐丙向 / 子坐午向 / 癸坐丁向',facing:['丙','午','丁']},
+  '艮':{desc:'丑坐未向 / 艮坐坤向 / 寅坐申向',facing:['未','坤','申']},
+  '震':{desc:'甲坐庚向 / 卯坐酉向 / 乙坐辛向',facing:['庚','酉','辛']},
+  '巽':{desc:'辰坐戌向 / 巽坐乾向 / 巳坐亥向',facing:['戌','乾','亥']},
+  '離':{desc:'丙坐壬向 / 午坐子向 / 丁坐癸向',facing:['壬','子','癸']},
+  '坤':{desc:'未坐丑向 / 坤坐艮向 / 申坐寅向',facing:['丑','艮','寅']},
+  '兌':{desc:'庚坐甲向 / 酉坐卯向 / 辛坐乙向',facing:['甲','卯','乙']},
+  '乾':{desc:'戌坐辰向 / 乾坐巽向 / 亥坐巳向',facing:['辰','巽','巳']},
+};
+
+const MYUNGGUNG = ['—','坎','坤','震','巽','中','乾','兑','艮','離'];
+
+const INBAN_DATA = {
+  '壬': { star:'천보', shade:'', prof:['비서 실장','(공)'] },
+  '子': { star:'천루', shade:'', prof:['배서 실장','(공)'] },
+  '癸': { star:'천도', shade:'', prof:['의사, 종교','지도자'] },
+  '丑': { star:'천주', shade:'', prof:['의사,','음식업'] },
+  '艮': { star:'천시', shade:'light', prof:['사업가'] }, 
+  '寅': { star:'천배', shade:'', prof:['대지주,','선주'] },
+  '甲': { star:'천원', shade:'', prof:['대지주,','정원'] },
+  '卯': { star:'천명', shade:'dark', prof:['의사'] },   
+  '乙': { star:'천관', shade:'', prof:['공직자,','판.검사'] },
+  '辰': { star:'천강', shade:'', prof:['판.검사,','공직자'] },
+  '巽': { star:'태을', shade:'light', prof:['여자','공직자'] }, 
+  '巳': { star:'천병', shade:'', prof:['공직자'] },
+  '丙': { star:'태미', shade:'light', prof:['과학자,','문수'] }, 
+  '午': { star:'천마', shade:'', prof:['의사, 음식업','사업가'] },
+  '丁': { star:'남극', shade:'light', prof:['사업가,','공직자'] }, 
+  '未': { star:'천상', shade:'', prof:['사업가'] },
+  '坤': { star:'천월', shade:'', prof:['공직자'] },
+  '申': { star:'천황', shade:'', prof:['공무원,','문학예술'] },
+  '庚': { star:'천한', shade:'dark', prof:['남공직자,','과학자'] }, 
+  '酉': { star:'소미', shade:'light', prof:['과학자'] }, 
+  '辛': { star:'천을', shade:'light', prof:['남공직자'] }, 
+  '戌': { star:'천괴', shade:'', prof:['경찰'] },
+  '乾': { star:'천구', shade:'', prof:['운수'] }, 
+  '亥': { star:'천문', shade:'dark', prof:['대통령'] } 
+};
+
+/* ─── 擇日 (Auspicious Date/Time) 데이터 ─── */
+const GAPSUN_TABLE = {
+  '子': { saeng:['甲子','甲午'], byung:['甲寅','甲申'], sa:['甲辰','甲戌'] },
+  '午': { saeng:['甲子','甲午'], byung:['甲寅','甲申'], sa:['甲辰','甲戌'] },
+  '卯': { saeng:['甲子','甲午'], byung:['甲寅','甲申'], sa:['甲辰','甲戌'] },
+  '酉': { saeng:['甲子','甲午'], byung:['甲寅','甲申'], sa:['甲辰','甲戌'] },
+  '辰': { saeng:['甲辰','甲戌'], byung:['甲子','甲午'], sa:['甲寅','甲申'] },
+  '戌': { saeng:['甲辰','甲戌'], byung:['甲子','甲午'], sa:['甲寅','甲申'] },
+  '丑': { saeng:['甲辰','甲戌'], byung:['甲子','甲午'], sa:['甲寅','甲申'] },
+  '未': { saeng:['甲辰','甲戌'], byung:['甲子','甲午'], sa:['甲寅','甲申'] },
+  '寅': { saeng:['甲寅','甲申'], byung:['甲辰','甲戌'], sa:['甲子','甲午'] },
+  '申': { saeng:['甲寅','甲申'], byung:['甲辰','甲戌'], sa:['甲子','甲午'] },
+  '巳': { saeng:['甲寅','甲申'], byung:['甲辰','甲戌'], sa:['甲子','甲午'] },
+  '亥': { saeng:['甲寅','甲申'], byung:['甲辰','甲戌'], sa:['甲子','甲午'] }
+};
+
+const CHEONEUL_TABLE = {
+  '甲': ['未', '丑'], '戊': ['未', '丑'], '庚': ['未', '丑'],
+  '乙': ['申', '子'], '己': ['申', '子'],
+  '丙': ['亥', '酉'], '丁': ['亥', '酉'],
+  '辛': ['午', '寅'],
+  '壬': ['巳', '卯'], '癸': ['巳', '卯']
+};
+
+const HWANGDO_TABLE = {
+  '子': { '靑龍':'申', '明堂':'酉', '金匱':'子', '天德':'丑', '玉堂':'卯', '司命':'午' },
+  '午': { '靑龍':'申', '明堂':'酉', '金匱':'子', '天德':'丑', '玉堂':'卯', '司命':'午' },
+  '丑': { '靑龍':'戌', '明堂':'亥', '金匱':'寅', '天德':'卯', '玉堂':'巳', '司命':'申' },
+  '未': { '靑龍':'戌', '明堂':'亥', '金匱':'寅', '天德':'卯', '玉堂':'巳', '司命':'申' },
+  '寅': { '靑龍':'子', '明堂':'丑', '金匱':'辰', '天德':'巳', '玉堂':'未', '司命':'戌' },
+  '申': { '靑龍':'子', '明堂':'丑', '金匱':'辰', '天德':'巳', '玉堂':'未', '司命':'戌' },
+  '卯': { '靑龍':'寅', '明堂':'卯', '金匱':'午', '天德':'未', '玉堂':'酉', '司命':'子' },
+  '酉': { '靑龍':'寅', '明堂':'卯', '金匱':'午', '天德':'未', '玉堂':'酉', '司命':'子' },
+  '辰': { '靑龍':'辰', '明堂':'巳', '金匱':'申', '天德':'酉', '玉堂':'亥', '司命':'寅' },
+  '戌': { '靑龍':'辰', '明堂':'巳', '金匱':'申', '天德':'酉', '玉堂':'亥', '司命':'寅' },
+  '巳': { '靑龍':'午', '明堂':'未', '金匱':'戌', '天德':'亥', '玉堂':'丑', '司命':'辰' },
+  '亥': { '靑龍':'午', '明堂':'未', '金匱':'戌', '天德':'亥', '玉堂':'丑', '司命':'辰' }
+};
+
+const DONGCHONG_TABLE = [
+  { group: ['壬子','癸丑','丙午','丁未'], dali: ['辰','戌','丑','未'], sori: ['子','午','卯','酉'], jungsang: ['寅','申','巳','亥'] },
+  { group: ['乙辰','巽巳','辛戌','乾亥'], dali: ['寅','申','巳','亥'], sori: ['辰','戌','丑','未'], jungsang: ['子','午','卯','酉'] },
+  { group: ['艮寅','甲卯','坤申','庚酉'], dali: ['子','午','卯','酉'], sori: ['寅','申','巳','亥'], jungsang: ['辰','戌','丑','未'] }
+];
+
+const BUILD_REMOVE_DATA = [
+  { name:'建', good:'집청소·외출·입학·구인', bad:'건축·수리·장사·결혼' },
+  { name:'除', good:'제사·치료·수술·파종', bad:'이사·구직' },
+  { name:'滿', good:'제사·집청소·초객·파종·이사', bad:'건축' },
+  { name:'平', good:'토공·제사', bad:'파종·벌목' },
+  { name:'定', good:'제사·결혼·구직·구인·건축·수리·장사', bad:'소송·파종' },
+  { name:'執', good:'제사·혼인·건축·장사', bad:'외출·이동' },
+  { name:'破', good:'허물기·수술·치료·개업', bad:'외출·이동·잔치' },
+  { name:'危', good:'제사·건축·수리', bad:'' },
+  { name:'成', good:'제사·혼인·구직·구인·건축·수리·장사·만사', bad:'' },
+  { name:'收', good:'제사·초목·파종·결혼·수금', bad:'외출·장사' },
+  { name:'開', good:'제사·혼인·건축·외출', bad:'장사' },
+  { name:'閉', good:'제사·장사', bad:'개업·이동·건축' }
+];
+
+const BONUS_LUCK = {
+  '生': { title:'속발복(速發福)', desc:'재물이 100일 내에 들어오고 명예를 얻음' },
+  '天': { title:'가운번성(家運繁盛)', desc:'자손이 번창하고 만성 질환이 완쾌됨' }
+};
+
+const BONMYEONG_MAP = {
+  // 예시 데이터 (실제는 1910~2043 매핑 필요)
+  '1970': { m: { gung:'震', side:'東' }, f: { gung:'震', side:'東' } },
+  '1984': { m: { gung:'兌', side:'西' }, f: { gung:'艮', side:'西' } },
+  '2024': { m: { gung:'震', side:'東' }, f: { gung:'震', side:'東' } }
+};
+
+function getBonmyeong(year, gender) {
+  // 간이 수식 (이미지 3번 수식 적용 가능)
+  // 남자: 1+9+2+8=20, 2+0=2, 11-2=9 (구자/이궁)
+  // 여자: 1+9+3+0=13, 1+3=4, 4+4=8 (팔백/간궁)
+  if(!year || year < 1900) return null;
+  const s = String(year).split('').reduce((a,b)=>a+Number(b),0);
+  const s2 = String(s).split('').reduce((a,b)=>a+Number(b),0);
+  const s3 = String(s2).split('').reduce((a,b)=>a+Number(b),0);
+  
+  const gungs = ['坎','坤','震','巽','中','乾','兌','艮','離']; // 1..9
+  if(gender === 'male') {
+    let res = 11 - s3;
+    while(res <= 0) res += 9;
+    if(res === 5) return { gung:'坤', side:'西' }; // 5황은 남자의 경우 곤궁
+    return { gung: gungs[res-1], side: ['坎','震','巽','離'].includes(gungs[res-1])?'東':'西' };
+  } else {
+    let res = s3 + 4;
+    while(res > 9) res -= 9;
+    if(res === 5) return { gung:'艮', side:'西' }; // 5황은 여자의 경우 간궁
+    return { gung: gungs[res-1], side: ['坎','震','巽','離'].includes(gungs[res-1])?'東':'西' };
+  }
+}
+
+const HOIDOSAL_MAP = {
+  '戊戌': ['甲子','癸酉','壬午','乙卯'] // 대표 예시
+};
+
+const YANGTAEK_TABLE = {
+  '乾': { '乾':'伏', '坤':'延', '艮':'天', '兌':'生', '坎':'六', '離':'絶', '震':'五', '巽':'禍' },
+  '坤': { '乾':'延', '坤':'伏', '艮':'生', '兌':'天', '坎':'絶', '離':'六', '震':'禍', '巽':'五' },
+  '艮': { '乾':'天', '坤':'생', '艮':'伏', '兌':'延', '坎':'五', '離':'禍', '震':'六', '巽':'絶' },
+  '兌': { '乾':'生', '坤':'天', '艮':'延', '兌':'伏', '坎':'禍', '離':'五', '震':'絶', '巽':'六' },
+  '坎': { '乾':'六', '坤':'絶', '艮':'五', '兌':'禍', '坎':'伏', '離':'延', '震':'天', '巽':'生' },
+  '離': { '乾':'絶', '坤':'六', '艮':'禍', '兌':'五', '坎':'延', '離':'伏', '震':'生', '巽':'天' },
+  '震': { '乾':'五', '坤':'禍', '艮':'六', '兌':'絶', '坎':'天', '離':'生', '震':'伏', '巽':'延' },
+  '巽': { '乾':'禍', '坤':'五', '艮':'絶', '兌':'六', '坎':'생', '離':'天', '震':'延', '巽':'伏' }
+};
+
+const PALYUSEONG_INFO = {
+  '生': { name:'생기(生氣)', type:'吉', symbol:'●●●', house:'생기택(生氣宅)', desc:'만사가 형통하고 발복이 가장 빠름' },
+  '天': { name:'천의(天醫)', type:'吉', symbol:'●●', house:'천의택(天醫宅)', desc:'건강과 재물을 얻으며 질병이 사라짐' },
+  '延': { name:'연년(延年)', type:'吉', symbol:'●●●', house:'연년택(延年宅)', desc:'부부 화합하고 장수하며 자손이 번창함' },
+  '伏': { name:'보복(伏位)', type:'吉', symbol:'●', house:'보복택(伏位宅)', desc:'매사 평안하고 가정이 화목하고 평온함' },
+  '絶': { name:'절명(絶命)', type:'凶', symbol:'◆◆◆', house:'절명택(絶命宅)', desc:'재난이 겹치고 건강을 잃으며 자손이 귀함' },
+  '五': { name:'오귀(五鬼)', type:'凶', symbol:'◆◆', house:'오귀택(五鬼宅)', desc:'도둑이나 화재, 구설 시비가 끊이지 않음' },
+  '六': { name:'육살(六殺)', type:'凶', symbol:'◆◆', house:'육살택(六殺宅)', desc:'질병이 생기고 구설수와 관재수가 따름' },
+  '禍': { name:'화해(禍害)', type:'凶', symbol:'◆', house:'화해택(禍害宅)', desc:'재물을 잃고 신체가 허약해지며 관재 발생' }
+};
+
+const PALYUSEONG_DIRS = {
+  '東': ['坎','離','震','巽'],
+  '西': ['乾','坤','艮','兌']
+};
+
+const PALACE_PROPS = {
+  '乾': { side:'西', yy:'陽', elem:'金', name:'건(乾)', color:'흰색, 은색', item:'시계, 금속 모빌, 둥근 물건' },
+  '坤': { side:'西', yy:'陰', elem:'土', name:'곤(坤)', color:'황토색, 노란색', item:'도자기, 흙, 사각형 물건' },
+  '艮': { side:'西', yy:'陽', elem:'土', name:'간(艮)', color:'황토색, 노란색', item:'도자기, 석재 조각품' },
+  '兌': { side:'西', yy:'陰', elem:'金', name:'태(兌)', color:'흰색, 실버', item:'거울, 금속 장식품' },
+  '坎': { side:'東', yy:'陽', elem:'水', name:'감(坎)', color:'검은색, 남색', item:'수족관, 유리제품, 수석' },
+  '離': { side:'東', yy:'陰', elem:'火', name:'이(離)', color:'붉은색, 주황색', item:'조명, 붉은 카펫, 뾰족한 물건' },
+  '震': { side:'東', yy:'陽', elem:'木', name:'진(震)', color:'초록색, 파란색', item:'화초류, 목조각품' },
+  '巽': { side:'東', yy:'陰', elem:'木', name:'손(巽)', color:'초록색, 연두색', item:'풍경화, 나무 소재 가구' }
+};
+
+const ELEM_COMPAT = {
+  '金': { '金':'比', '土':'生', '水':'生', '木':'克', '火':'被' },
+  '土': { '土':'比', '火':'生', '金':'生', '水':'克', '木':'被' },
+  '水': { '水':'比', '金':'生', '木':'生', '火':'克', '土':'破' },
+  '木': { '木':'比', '水':'生', '火':'生', '土':'克', '金':'絶' },
+  '火': { '火':'比', '木':'生', '土':'生', '金':'克', '水':'絶' }
+};
+
+const MANSIONS_28 = [
+  { name:'角(각)', good:'건축·수리·혼인', bad:'매장·수묘·석물' },
+  { name:'亢(항)', good:'', bad:'매장(장선남해)·혼인(공방수)·장사(중상)' },
+  { name:'氐(저)', good:'건축·수리·혼인', bad:'장사·수리' },
+  { name:'房(방)', good:'모든 일', bad:'장사' },
+  { name:'心(심)', good:'', bad:'모든 일' },
+  { name:'尾(미)', good:'건축·수리·혼인·개문·방수', bad:'' },
+  { name:'箕(기)', good:'건축·수리·수묘·안장·개문·방수', bad:'' },
+  { name:'斗(두)', good:'건축·장사', bad:'' },
+  { name:'牛(우)', good:'', bad:'모든 일(수신일)' },
+  { name:'女(녀)', good:'', bad:'건축·수리·수묘·안장·개문·방수' },
+  { name:'虛(허)', good:'모든 일', bad:'장사' },
+  { name:'危(위)', good:'', bad:'건축·수리·안장·개문·방수' },
+  { name:'室(실)', good:'건축·수리·안장·개문·방수', bad:'' },
+  { name:'壁(벽)', good:'혼인·건조·수묘·안장·개문·방수', bad:'' },
+  { name:'奎(규)', good:'건조·공작', bad:'안장·개문·방수' },
+  { name:'婁(루)', good:'건조·혼인·수리·안장·개문·방수', bad:'' },
+  { name:'胃(위)', good:'건축·수리·장사', bad:'' },
+  { name:'昴(묘)', good:'건축·공작', bad:'수묘·안장·혼인·개문·방수' },
+  { name:'畢(필)', good:'건축·수리·혼인·개문·방수', bad:'' },
+  { name:'觜(자)', good:'장사', bad:'나머지 모든 일' },
+  { name:'參(삼)', good:'건조', bad:'안장·혼인·개문·방수' },
+  { name:'井(정)', good:'건축·수리·개문·방수', bad:'장사·수리' },
+  { name:'鬼(귀)', good:'장사·수리', bad:'건축·수리·혼인·개문·방수' },
+  { name:'柳(류)', good:'건축·수리·개공·안장·수리·개문·방수', bad:'장사' },
+  { name:'星(성)', good:'신방 꾸미기', bad:'모든 일' },
+  { name:'張(장)', good:'건축·수리·수묘·장사·혼인·외출·출병', bad:'' },
+  { name:'翼(익)', good:'수묘·안장·입석', bad:'건축·수리·개업·개문·방수' },
+  { name:'軫(진)', good:'외출·조선·건축·수리·공작·장사·재의', bad:'' }
+];
+
+const NINE_STARS = [
+  { val:1, name:'一白', color:'var(--txt)', isGood:true },
+  { val:2, name:'二黑', color:'var(--txt2)', isGood:false },
+  { val:3, name:'三碧', color:'var(--txt2)', isGood:false },
+  { val:4, name:'四綠', color:'var(--txt2)', isGood:false },
+  { val:5, name:'五黃', color:'var(--red)', isGood:false },
+  { val:6, name:'六白', color:'var(--txt)', isGood:true },
+  { val:7, name:'七赤', color:'var(--txt2)', isGood:false },
+  { val:8, name:'八白', color:'var(--txt)', isGood:true },
+  { val:9, name:'九紫', color:'var(--gold-lt)', isGood:true }
+];
+
+/* ─── 간지 계산 (간단한 버전) ─── */
+const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+function getGanji(date) {
+  const dt = new Date(date);
+  if (isNaN(dt)) return null;
+  
+  // 연도 간지 (기준: 1984년 甲子년)
+  const yBase = 1984;
+  const yDiff = dt.getFullYear() - yBase;
+  const yIndex = (yDiff % 60 + 60) % 60;
+  const yGanji = STEMS[yIndex % 10] + BRANCHES[yIndex % 12];
+  
+  // 일 간지 (기준: 2000년 1월 1일 戊午일)
+  const dBase = new Date('2000-01-01');
+  const dDiff = Math.floor((dt - dBase) / (1000 * 60 * 60 * 24));
+  const dFinalIndex = (54 + dDiff % 60 + 60) % 60;
+  const dGanji = STEMS[dFinalIndex % 10] + BRANCHES[dFinalIndex % 12];
+  
+  // 순(旬) 계산
+  const sunIndex = Math.floor(dFinalIndex / 10) * 10;
+  const sunChar = STEMS[0] + BRANCHES[sunIndex % 12];
+  
+  // 월지 (간략 매핑)
+  const m = dt.getMonth(); // 0~11
+  const mBranch = BRANCHES[(m + 2) % 12]; // 1월:寅(2) ... 11월:子(0)
+  
+  // 12신(建除) 계산: 월지와 일지의 차이
+  const dBranch = dGanji[1];
+  const mIdx = BRANCHES.indexOf(mBranch);
+  const dIdx = BRANCHES.indexOf(dBranch);
+  const kcIdx = (dIdx - mIdx + 12) % 12;
+  const kunchu = BUILD_REMOVE_DATA[kcIdx];
+
+  // 28숙 (기준: 2000-01-01은 虛)
+  // MANSIONS_28 인덱스: 0:각, 1:항... 10:허...
+  const m28Idx = (10 + dDiff % 28 + 28) % 28;
+  const mansion = MANSIONS_28[m28Idx];
+
+  // 9성 (九星) 계산 - 간이 로직 (양둔/음둔)
+  // 양둔: 동지~하지 (1->9), 음둔: 하지~동지 (9->1)
+  const isYang = (dt.getMonth() < 5 || (dt.getMonth()===5 && dt.getDate() < 21) || (dt.getMonth()===11 && dt.getDate() >= 22));
+  // 앵커: 2024-01-01 (양둔 기간), 일진: 甲子일로 가정시 1백? 실제력 기반 근사치
+  // 2024년 1월 1일은 9성상 2흑(二黑)일. (양둔 기간)
+  const dBase9 = new Date('2024-01-01');
+  const dDiff9 = Math.floor((dt - dBase9) / (1000 * 60 * 60 * 24));
+  let starVal;
+  if(isYang) {
+    starVal = (2 + dDiff9 % 9 + 8) % 9 + 1; // 1->9 순환
+  } else {
+    starVal = (2 - dDiff9 % 9 + 8) % 9 + 1; // 9->1 순환
+  }
+  const star = NINE_STARS.find(s => s.val === starVal);
+
+  return { year: yGanji, day: dGanji, sun: sunChar, kunchu: kunchu, mBranch: mBranch, mansion: mansion, star: star };
+}
+
+/* ─── 60갑자 배열 (투지60룡/천산72룡 기준) ─── */
+const BRANCH_12 = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const D60 = (() => {
+  const yStems = ['甲','丙','戊','庚','壬'];
+  const nStems = ['乙','丁','己','辛','癸'];
+  const res = [];
+  BRANCH_12.forEach((b, i) => {
+    const stems = (i % 2 === 0) ? yStems : nStems;
+    stems.forEach(s => res.push(s + b));
+  });
+  return res;
+})();
+
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let S = {dragon:null,shui:null,pagu:null,bureau:null,simDone:false,locationData:{city:'화성시',coords:'37.2°N 126.8°E'}};
+
+function updateLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (p) => {
+        const lat = p.coords.latitude, lon = p.coords.longitude;
+        S.locationData.coords = `${lat.toFixed(1)}°N ${lon.toFixed(1)}°E`;
+        const lx = document.getElementById('loc-txt'); if(lx) lx.innerHTML = `${lat.toFixed(1)}°N &nbsp;${lon.toFixed(1)}°E`;
+        try {
+          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`, {headers:{'Accept-Language':'ko'}});
+          const d = await r.json();
+          if (d && d.address) {
+            const c = d.address.city || d.address.town || d.address.village || d.address.county || '현위치';
+            S.locationData.city = c;
+            const cx = document.getElementById('city-name'); if(cx) cx.textContent = c;
+          }
+        } catch (e) {}
+        buildCompass();
+      },
+      () => {}
+    );
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   POPULATE SELECTS
+═══════════════════════════════════════════════════ */
+function populateSelects(){
+  const getCompass = (d)=>{
+    if(d===0 || d===345 || d===15) return 'N ';
+    if(d===90 || d===75 || d===105) return 'E ';
+    if(d===180 || d===165 || d===195) return 'S ';
+    if(d===270 || d===255 || d===285) return 'W ';
+    return '';
+  };
+
+  ['sel-dragon','sel-shui','sel-pagu'].forEach(id=>{
+    const el = document.getElementById(id);
+    const hasEmpty = id==='sel-dragon'?'— 입수룡 선택 —':'없음';
+    el.innerHTML = `<option value="">${hasEmpty}</option>`;
+    
+    DIR24.forEach((d,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${d.char} (${d.kor}) — ${d.palace}宮 ${getCompass(d.deg)}${d.deg}°`;
+      el.appendChild(opt);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   MINI DIAL SVG
+═══════════════════════════════════════════════════ */
+function buildDial(deg){
+  const cx=26,cy=26,R=23,r=10;
+  const rad = (deg-90)*Math.PI/180;
+  const nx = cx+R*Math.cos(rad), ny = cy+R*Math.sin(rad);
+  const svg = document.getElementById('dial-svg');
+  svg.innerHTML=`
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(0,150,100,.4)" stroke-width="1"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(0,30,20,.8)" stroke="rgba(0,200,150,.3)" stroke-width=".8"/>
+    <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#44ffdb" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="2.5" fill="#00c9a7"/>
+    <!-- N marker -->
+    <text x="${cx}" y="4" text-anchor="middle" font-size="5" fill="rgba(0,200,150,.6)" font-family="sans-serif">N</text>
+    <!-- tick marks -->
+    ${Array.from({length:24},(_,i)=>{
+      const a=(i*15-90)*Math.PI/180;
+      const r1=20,r2=23;
+      return `<line x1="${cx+r1*Math.cos(a)}" y1="${cy+r1*Math.sin(a)}" x2="${cx+r2*Math.cos(a)}" y2="${cy+r2*Math.sin(a)}" stroke="rgba(0,150,100,.35)" stroke-width=".5"/>`;
+    }).join('')}
+  `;
+  const dd = document.getElementById('dial-deg');
+  if(dd) dd.textContent = Math.round(deg)+'°';
+}
+
+/* ═══════════════════════════════════════════════════
+   MAIN COMPASS SVG (9-Layer Paecheol)
+═══════════════════════════════════════════════════ */
+function buildCompass(highlightDragon=null,highlightShui=null,highlightPagu=null){
+  const svg = document.getElementById('cmp-svg');
+  const cx=150,cy=150;
+  
+  // 9 Rings Radiuses (Center to Outer) - 6층 확장
+  const r0=15, r1=24, r2=35, r3=46, r4=57, r5=66, r6=118, r7=128, r8=138, r9=148;
+
+  let html = '';
+
+  // Defs & Glows
+  html+=`<defs>
+    <filter id="gf" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+    <filter id="woodTexture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.53 0 0 0 0 0.43 0 0 0 0 0.26 0 0 0 0.1 0" result="colornoise"/>
+      <feComposite operator="in" in="colornoise" in2="SourceGraphic"/>
+    </filter>
+  </defs>`;
+
+  // Rotate the entire compass logic by 180 degrees so South (午) is at the Top.
+  html+=`<g transform="rotate(180, ${cx}, ${cy})">`;
+
+  // Base background ring (Traditional Wooden Compass Aesthetic)
+  const woodBase = '#d4ad6a';
+  const woodDark = '#a07d3b';
+  const woodLight = '#e6c27a';
+
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r9+4}" fill="${woodDark}" stroke="${woodDark}" stroke-width="1.5"/>
+         <circle cx="${cx}" cy="${cy}" r="${r9+3}" fill="${woodBase}" filter="url(#woodTexture)"/>
+         <circle cx="${cx}" cy="${cy}" r="${r9}" fill="${woodLight}" stroke="${woodDark}" stroke-width="0.8"/>`;
+
+  // Draw 9 Ring dividers (Etched wood style)
+  [r8,r7,r6,r5,r4,r3,r2,r1,r0].forEach(r=>{
+    html+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${woodDark}" stroke-width="0.5" opacity="0.6"/>`;
+  });
+
+  // Helper for radial text
+  const drawRotatedText = (text, radius, degree, color, size, fw='normal', yOffset=0) => {
+    const a = degree * Math.PI/180;
+    const tx = cx + radius * Math.sin(a);
+    const ty = cy - radius * Math.cos(a) + yOffset;
+    // Add 180 degrees so that the text's TOP points towards the center of the diagram
+    const textRot = (degree + 180) % 360;
+    return `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle"
+             font-size="${size}" font-family="Noto Serif KR,serif" font-weight="${fw}" fill="${color}"
+             transform="rotate(${textRot},${tx},${ty})">${text}</text>`;
+  };
+
+  // Helper for drawing 2 characters vertically along the radius
+  const drawVerticalPair = (str, radius, degree, color, size, fw='normal') => {
+    if (str.length === 2) {
+      const span = size * 0.55;
+      // top char str[0] to inner radius (since top points to center)
+      let res = drawRotatedText(str[0], radius - span, degree, color, size, fw);
+      // bottom char str[1] to outer radius
+      res += drawRotatedText(str[1], radius + span, degree, color, size, fw);
+      return res;
+    }
+    return drawRotatedText(str, radius, degree, color, size, fw);
+  };
+
+  // Helper for sector highlight paths
+  const drawSectorHighlight = (innerR, outerR, centerDeg, widthDeg, fill, glowColor=null) => {
+    const a0 = (centerDeg - widthDeg/2) * Math.PI/180;
+    const a1 = (centerDeg + widthDeg/2) * Math.PI/180;
+    const sin0=Math.sin(a0), cos0=-Math.cos(a0), sin1=Math.sin(a1), cos1=-Math.cos(a1);
+    const path = `M${cx+outerR*sin0},${cy+outerR*cos0} A${outerR},${outerR} 0 0,1 ${cx+outerR*sin1},${cy+outerR*cos1} L${cx+innerR*sin1},${cy+innerR*cos1} A${innerR},${innerR} 0 0,0 ${cx+innerR*sin0},${cy+innerR*cos0}Z`;
+    let res = '';
+    if(glowColor) res += `<path d="${path}" fill="${glowColor}" filter="url(#gf)"/>`;
+    res += `<path d="${path}" fill="${fill}" stroke="rgba(0,255,180,.3)" stroke-width="0.5"/>`;
+    return res;
+  };
+
+  // Helper for divisions (Ticks)
+  const drawTicks = (innerR, outerR, splits, isLight=false, offsetDeg=0) => {
+    let lines='';
+    const degStep = 360 / splits;
+    const stroke = isLight ? 'rgba(176,138,70,0.5)' : '#b08a46';
+    for(let i=0; i<splits; i++){
+      const a = (i*degStep + offsetDeg) * Math.PI/180;
+      lines+=`<line x1="${cx+innerR*Math.sin(a)}" y1="${cy-innerR*Math.cos(a)}"
+                    x2="${cx+outerR*Math.sin(a)}" y2="${cy-outerR*Math.cos(a)}"
+                    stroke="${stroke}" stroke-width="0.5"/>`;
+    }
+    return lines;
+  };
+
+  // ============================================
+  // 1층: 용상팔살 (Yongsang Palsal)
+  // ============================================
+  const palsal24 = ['','辰','','','寅','','','申','','','酉','','','亥','','','卯','','','巳','','','午',''];
+  DIR24.forEach((d, i) => {
+    if(palsal24[i]) {
+      html += drawRotatedText(palsal24[i], (r0+r1)/2, d.deg, '#c62828', 7.5, 'bold');
+    }
+  });
+  html += drawTicks(r0, r1, 24, false, 7.5); // 24 divisions
+
+  // ============================================
+  // 2층: 팔로사로황천살 (Eight Winds / Hwangcheon)
+  // ============================================
+  const yopung24 = ['乾','','艮','','甲癸','','艮','','巽','','乙丙','','巽','','坤','','丁庚','','坤','','乾','','辛壬',''];
+  DIR24.forEach((d, i) => {
+    if(yopung24[i]) {
+      if(yopung24[i].length === 2) {
+        html += drawVerticalPair(yopung24[i], (r1+r2)/2, d.deg, '#111', 4.5, 'bold');
+      } else {
+        html += drawRotatedText(yopung24[i], (r1+r2)/2, d.deg, '#111', 6.5, 'bold');
+      }
+    }
+  });
+  html += drawTicks(r1, r2, 24, false, 7.5);
+
+  // ============================================
+  // 3층: 3합오행 (Samhap Elements)
+  // ============================================
+  const samhap12 = [
+    { elem: '金', deg: 30 },   // 丑 (癸丑)
+    { elem: '火', deg: 60 },   // 寅 (艮寅)
+    { elem: '木', deg: 90 },   // 卯 (甲卯)
+    { elem: '水', deg: 120 },  // 辰 (乙辰)
+    { elem: '金', deg: 150 },  // 巳 (巽巳)
+    { elem: '火', deg: 180 },  // 午 (丙午)
+    { elem: '木', deg: 210 },  // 未 (丁未)
+    { elem: '水', deg: 240 },  // 申 (坤申)
+    { elem: '金', deg: 270 },  // 酉 (庚酉)
+    { elem: '火', deg: 300 },  // 戌 (辛戌)
+    { elem: '木', deg: 330 },  // 亥 (乾亥)
+    { elem: '水', deg: 0 }     // 子 (壬子)
+  ];
+  samhap12.forEach((item) => {
+    const col = (item.elem === '火' || item.elem === '木') ? '#c62828' : '#111';
+    html += drawRotatedText(item.elem, (r2+r3)/2, item.deg, col, 8, 'bold');
+  });
+  html += drawTicks(r2, r3, 12, false, 7.5); // 12 divisions for Shuangshan pairs
+
+  // ============================================
+  // 4층: 래용과 양택입향 (지반정침 - 24 Mountains)
+  // ============================================
+  const redMnts = ['壬','子','癸','寅','甲','乙','辰','丙','午','丁','申','庚','辛','戌','乾'];
+  DIR24.forEach((d) => {
+    // Bold Blocks for Cardinal Directions (子, 午, 卯, 酉) to match photo's prominent markers
+    if(d.char === '子' || d.char === '午') {
+      // Red block spans multiple rings for visual weight
+      html += drawSectorHighlight(r2, r4, d.deg, 15, '#b71c1c');
+    } else if (d.char === '卯' || d.char === '酉') {
+      // Dark block for East/West
+      html += drawSectorHighlight(r2, r4, d.deg, 15, '#212121');
+    }
+
+    if(highlightDragon && d.char === highlightDragon.char) {
+      html += drawSectorHighlight(r3, r4, d.deg, 15, 'rgba(255,255,255,.3)', 'rgba(255,255,255,.5)');
+    }
+
+    let txtCol = '#111'; 
+    if(redMnts.includes(d.char)) {
+      if(d.char === '子' || d.char === '午') txtCol = '#fff'; // White text on Red block
+      else txtCol = '#d32f2f'; // Red text
+    }
+    if (d.char === '卯' || d.char === '酉') {
+      txtCol = '#fff'; // White text on Dark block
+    }
+    
+    html += drawRotatedText(d.char, (r3+r4)/2, d.deg, txtCol, 8.5, 'bold');
+  });
+  html += drawTicks(r2, r4, 24, false, 7.5); // Unified ticks for core layers
+
+  // ─ 龍 방향지시 포인터 (4층 바깥, r4 위치) ─
+  if(highlightDragon) {
+    const a = highlightDragon.deg * Math.PI/180;
+    const px = cx + r4 * Math.sin(a);
+    const py = cy - r4 * Math.cos(a);
+    // 삼각형 포인터: 중심→r4 방향, 뾰족한 끝이 r4 경계
+    const pSize = 5;
+    const perp = (highlightDragon.deg + 90) * Math.PI/180;
+    const p1x = px + pSize*Math.cos(perp), p1y = py + pSize*Math.sin(perp);
+    const p2x = px - pSize*Math.cos(perp), p2y = py - pSize*Math.sin(perp);
+    const tipx = cx + (r4+8)*Math.sin(a), tipy = cy - (r4+8)*Math.cos(a);
+    html += `<polygon points="${p1x},${p1y} ${p2x},${p2y} ${tipx},${tipy}"
+               fill="#0066cc" stroke="#004c99" stroke-width="0.8" opacity="0.95"/>`;
+    html += `<text x="${cx+(r4+13)*Math.sin(a)}" y="${cy-(r4+13)*Math.cos(a)}"
+               text-anchor="middle" dominant-baseline="middle"
+               font-size="7" font-family="Noto Serif KR,serif" font-weight="bold" fill="#0066cc"
+               transform="rotate(${(highlightDragon.deg + 180) % 360},${cx+(r4+13)*Math.sin(a)},${cy-(r4+13)*Math.cos(a)})">龍</text>`;
+  }
+
+  // ============================================
+  // 5층: 천산 72룡 (72 Dragons)
+  // ============================================
+  html += drawTicks(r4, r5, 72, true, 2.5);
+  let d72 = [];
+  let d60Idx = 59; // 壬에서 癸亥(59)로 시작
+  for(let m=0; m<24; m++){
+    if(m % 2 === 0) { // 천간/팔괘 (공망 존재)
+      d72.push(D60[d60Idx%60]); d60Idx++;
+      d72.push(''); // 대공망
+      d72.push(D60[d60Idx%60]); d60Idx++;
+    } else { // 12지지 (빈칸 없음)
+      d72.push(D60[d60Idx%60]); d60Idx++;
+      d72.push(D60[d60Idx%60]); d60Idx++;
+      d72.push(D60[d60Idx%60]); d60Idx++;
+    }
+  }
+  d72.forEach((str, i) => {
+    if(str) {
+      const cDeg = 337.5 + i * 5 + 2.5;
+      html += drawVerticalPair(str, (r4+r5)/2, cDeg, '#111', 3.8);
+    }
+  });
+
+  // ============================================
+  // 6층: 인문 사봉 (인반중침 - 24 Mountains, -7.5 offset)
+  // ============================================
+  const inbanOffset = -7.5;
+  
+  // 6층 보조 선 (구역 분리)
+  html += `<circle cx="${cx}" cy="${cy}" r="${r5+11}" fill="none" stroke="rgba(0,150,90,.15)" stroke-width="0.4"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${r5+24}" fill="none" stroke="rgba(0,150,90,.15)" stroke-width="0.4"/>`;
+
+  DIR24.forEach((d) => {
+    const cDeg = d.deg + inbanOffset;
+    const iData = INBAN_DATA[d.char];
+    
+    // Background shade (三吉 / 六秀)
+    if (iData && iData.shade === 'dark') {
+      html += drawSectorHighlight(r5, r6, cDeg, 15, 'rgba(80,95,110,0.5)'); 
+    } else if (iData && iData.shade === 'light') {
+      html += drawSectorHighlight(r5, r6, cDeg, 15, 'rgba(200,210,220,0.15)');
+    }
+
+    let txtCol = redMnts.includes(d.char) ? '#c62828' : '#111';
+    
+    // 2) 24방위 문자 (Middle)
+    html += drawRotatedText(d.char, r5+17.5, cDeg, txtCol, 7.5, 'bold');
+    
+    // 1) 천성 문자 (Inner)
+    if(iData && iData.star) {
+      const starLines = iData.star.split(''); // 세로로 표시
+      html += drawRotatedText(starLines[0], r5+3.5, cDeg, '#333', 4.5);
+      html += drawRotatedText(starLines[1], r5+8.5, cDeg, '#333', 4.5);
+    }
+    
+    // 3) 직업 텍스트 (Outer)
+    if(iData && iData.prof) {
+      if(iData.prof.length === 1) {
+        html += drawRotatedText(iData.prof[0], r5+34, cDeg, '#444', 4.5);
+      } else {
+        html += drawRotatedText(iData.prof[0], r5+33, cDeg, '#444', 4.3);
+        if(iData.prof[1]) {
+          html += drawRotatedText(iData.prof[1], r5+41, cDeg, '#444', 4.3);
+        }
+      }
+    }
+
+    const a = ((cDeg - 7.5)) * Math.PI/180;
+    html += `<line x1="${cx+r5*Math.sin(a)}" y1="${cy-r5*Math.cos(a)}" x2="${cx+r6*Math.sin(a)}" y2="${cy-r6*Math.cos(a)}" stroke="${woodDark}" stroke-width="0.5"/>`;
+  });
+
+  // ============================================
+  // 7층: 투지 60룡 (Tuji 60 Dragons - Precise Alignment)
+  // ============================================
+  // Start at Ren (壬) mountain boundary: 337.5°
+  // Each dragon is 6° wide. First dragon center: 337.5 + 3 = 340.5°
+  const tujiOffset = 337.5;
+  html += drawTicks(r6, r7, 60, true, tujiOffset);
+  
+  D60.forEach((str, i) => {
+    const cDeg = (tujiOffset + i * 6 + 3 + 360) % 360;
+    const stem = str[0];
+    // Wang-Sang (Prosperous) dragons are Bing/Ding and Geng/Xin
+    const isWangSang = ['丙','丁','庚','辛'].includes(stem);
+    const txtCol = isWangSang ? '#b71c1c' : '#212121';
+    const fw = isWangSang ? 'bold' : 'normal';
+    
+    html += drawVerticalPair(str, (r6+r7)/2, cDeg, txtCol, 4.2, fw);
+  });
+
+  // ============================================
+  // 8층: 천반봉침 (24 Mountains, +7.5 offset)
+  // ============================================
+  const cheonbanOffset = 7.5;
+  DIR24.forEach((d) => {
+    const cDeg = (d.deg + cheonbanOffset + 360) % 360;
+
+    // 득수 (得) - Highlight back on Layer 8
+    if(highlightShui && d.char === highlightShui.char) {
+      html += drawSectorHighlight(r7, r8, cDeg, 15, 'rgba(0,180,255,.25)', 'rgba(0,180,255,.45)');
+      html += drawRotatedText('得', (r7+r8)/2, cDeg, '#00d2ff', 7.5, 'bold');
+    }
+    // 파구 (破) - Highlight back on Layer 8
+    if(highlightPagu && d.char === highlightPagu.char) {
+      html += drawSectorHighlight(r7, r8, cDeg, 15, 'rgba(255,20,50,.35)', 'rgba(255,20,50,.55)');
+      html += drawRotatedText('破', (r7+r8)/2, cDeg, '#ff1432', 7.5, 'bold');
+    }
+    // 향 (向) - Highlight back on Layer 8
+    if(highlightDragon) {
+      const hyangDeg = (highlightDragon.deg + 180 + 360) % 360;
+      const hPlateDeg = (hyangDeg + cheonbanOffset + 360) % 360;
+      const diff = Math.abs(cDeg - hPlateDeg);
+      if (diff < 8 || diff > 352) {
+        html += drawSectorHighlight(r7, r8, cDeg, 15, 'rgba(180,80,255,.3)', 'rgba(180,80,255,.45)');
+        html += drawRotatedText('向', (r7+r8)/2, cDeg, '#ce99ff', 7.5, 'bold');
+      }
+    }
+
+    let txtCol = redMnts.includes(d.char) ? '#c62828' : '#111';
+    html += drawRotatedText(d.char, (r7+r8)/2, cDeg, txtCol, 8.5, 'bold');
+    const a = ((cDeg - 7.5)) * Math.PI/180;
+    html += `<line x1="${cx+r7*Math.sin(a)}" y1="${cy-r7*Math.cos(a)}" x2="${cx+r8*Math.sin(a)}" y2="${cy-r8*Math.cos(a)}" stroke="${woodDark}" stroke-width="0.5"/>`;
+  });
+
+  // ─ 得·破·向 방향지시 포인터 (Layer 8를 가리키도록 복원) ─
+  const drawPointer = (deg, color, label, offset=12) => {
+    const a = deg * Math.PI/180;
+    const px = cx + r8 * Math.sin(a);
+    const py = cy - r8 * Math.cos(a);
+    const pSize = 7.5;
+    const perp = (deg + 90) * Math.PI/180;
+    const p1x = px + pSize*Math.cos(perp), p1y = py + pSize*Math.sin(perp);
+    const p2x = px - pSize*Math.cos(perp), p2y = py - pSize*Math.sin(perp);
+    const tipx = cx + (r8+11)*Math.sin(a), tipy = cy - (r8+11)*Math.cos(a);
+    
+    let res = `<polygon points="${p1x},${p1y} ${p2x},${p2y} ${tipx},${tipy}"
+                 fill="${color}" stroke="${color}" stroke-width="1.2" opacity="1" filter="url(#gf)"/>`;
+    const textRot = (deg + 180) % 360;
+    res += `<text x="${cx+(r8+offset+7)*Math.sin(a)}" y="${cy-(r8+offset+7)*Math.cos(a)}"
+               text-anchor="middle" dominant-baseline="middle"
+               font-size="9" font-family="Noto Serif KR,serif" font-weight="bold" fill="${color}"
+               transform="rotate(${textRot},${cx+(r8+offset+7)*Math.sin(a)},${cy-(r8+offset+7)*Math.cos(a)})">${label}</text>`;
+    // Central connecting line
+    res += `<line x1="${cx+r0*Math.sin(a)}" y1="${cy-r0*Math.cos(a)}" x2="${cx+r8*Math.sin(a)}" y2="${cy-r8*Math.cos(a)}"
+                  stroke="${color}" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.4"/>`;
+    return res;
+  };
+
+  if(highlightShui) {
+    const sDeg = (highlightShui.deg + cheonbanOffset + 360) % 360;
+    html += drawPointer(sDeg, '#00d2ff', '得');
+  }
+  if(highlightPagu) {
+    const pDeg = (highlightPagu.deg + cheonbanOffset + 360) % 360;
+    html += drawPointer(pDeg, '#ff1432', '破');
+  }
+  if(highlightDragon) {
+    const hyangDeg = (highlightDragon.deg + 180 + 360) % 360;
+    const hDeg = (hyangDeg + cheonbanOffset + 360) % 360;
+    html += drawPointer(hDeg, '#ce99ff', '向');
+  }
+
+  // ============================================
+  // 9층: 봉침분금 (120 divisions)
+  // ============================================
+  html += drawTicks(r8, r9, 120, true, 0);
+  for(let m=0; m<24; m++){
+    let b = Math.floor(m/2);
+    let branch = BRANCH_12[b];
+    let isY = (b % 2 === 0);
+    // 1산당 5분금 (왕상분금 丙/丁, 庚/辛 만 표기)
+    let slots = [
+      '',
+      (isY ? '丙' : '丁') + branch,
+      '',
+      (isY ? '庚' : '辛') + branch,
+      ''
+    ];
+    slots.forEach((str, sIdx) => {
+      if(str) {
+        const i = m * 5 + sIdx;
+        const cDeg = 345 + i * 3 + 1.5;
+        // 왕상분금 하이라이트
+        html += drawSectorHighlight(r8, r9, cDeg, 3, 'rgba(198,40,40,0.1)'); // faint red
+        html += drawVerticalPair(str, (r8+r9)/2, cDeg, '#111', 3.6);
+      }
+    });
+  }
+
+  html += `</g>`; // close the 180 degree rotation envelope
+
+  // ============================================
+  // CENTER DIAL (Compass Face)
+  // ============================================
+  // Center Dial Text Helpers
+  const drawDialUpright = (txt, rx, ry, col, sz, fw='normal') => {
+    return `<text x="${rx}" y="${ry}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Noto Serif KR,serif" font-weight="${fw}" fill="${col}" transform="rotate(180,${rx},${ry})">${txt}</text>`;
+  };
+  const drawDialTrigram = (txt, rad, deg, col, sz) => {
+    const a = deg * Math.PI/180;
+    const tx = cx + rad * Math.sin(a);
+    const ty = cy - rad * Math.cos(a);
+    return `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="${sz}" font-family="Arial,sans-serif" font-weight="normal" fill="${col}" transform="rotate(${deg},${tx},${ty})">${txt}</text>`;
+  };
+
+  // Outer metallic rim
+  // ============================================
+  // CENTER DIAL (Heavenly Pool / 天池 - Photo-Realistic Reconstruction)
+  // ============================================
+  let poolId = `pool_${Math.random().toString(36).substr(2,9)}`;
+  html += `<defs>
+    <!-- Brushed metal effect for the rim -->
+    <linearGradient id="${poolId}_rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="20%" stop-color="#ddd"/>
+      <stop offset="40%" stop-color="#aaa"/>
+      <stop offset="50%" stop-color="#eee"/>
+      <stop offset="60%" stop-color="#aaa"/>
+      <stop offset="80%" stop-color="#999"/>
+      <stop offset="100%" stop-color="#666"/>
+    </linearGradient>
+    <filter id="${poolId}_glow">
+      <feGaussianBlur stdDeviation="0.3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="needleShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0.3" dy="0.3" stdDeviation="0.4" flood-opacity="0.4"/>
+    </filter>
+  </defs>`;
+
+  // 1. Heavy metallic outer rim
+  html += `<circle cx="${cx}" cy="${cy}" r="${r0}" fill="url(#${poolId}_rim)" stroke="#777" stroke-width="0.8"/>`;
+  // 2. Inner silver polished ring
+  html += `<circle cx="${cx}" cy="${cy}" r="${r0-1.2}" fill="#f8f8f8" stroke="#ccc" stroke-width="0.3"/>`;
+  // 3. Central white enamel face
+  html += `<circle cx="${cx}" cy="${cy}" r="${r0-2.5}" fill="#ffffff" stroke="#ddd" stroke-width="0.2"/>`;
+
+  // 4. Detailed degree ticks on the metal rim
+  for(let i=0; i<360; i+=2) {
+    const a = i * Math.PI/180;
+    const isMajor = i % 10 === 0;
+    const isFive = i % 5 === 0;
+    const innerR = isMajor ? r0 - 3.2 : (isFive ? r0 - 2.8 : r0 - 2.5);
+    const col = (i===0 || i===180) ? '#d32f2f' : (isMajor ? '#333' : '#bbb');
+    html += `<line x1="${cx+innerR*Math.sin(a)}" y1="${cy-innerR*Math.cos(a)}" x2="${cx+(r0-1.2)*Math.sin(a)}" y2="${cy-(r0-1.2)*Math.cos(a)}" stroke="${col}" stroke-width="${isMajor?0.3:0.15}"/>`;
+  }
+
+  // 5. Navigational Letters (S, N, W, E) on the Metallic Rim (South-up Orientation)
+  const navLetters = [
+    {deg: 0,   txt: 'S', col: '#c62828'}, // South is Top
+    {deg: 90,  txt: 'W', col: '#333'},    // West is Right
+    {deg: 180, txt: 'N', col: '#0d47a1'}, // North is Bottom
+    {deg: 270, txt: 'E', col: '#333'}     // East is Left
+  ];
+  navLetters.forEach(d => {
+    const a = d.deg * Math.PI/180;
+    const radius = r0 - 2.5; 
+    const tx = cx + radius * Math.sin(a);
+    const ty = cy - radius * Math.cos(a);
+    // Removed the transform="rotate(180...)" so letters are upright for the user
+    html += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="3" font-family="'Share Tech Mono', monospace" font-weight="900" fill="${d.col}">${d.txt}</text>`;
+  });
+
+  // 6. Bagua Trigrams (Later Heaven/South-up arrangement)
+  const bagua = [
+    {deg: 0,   char: '☲', col: '#c62828'}, // S (Li) - Top
+    {deg: 45,  char: '☷', col: '#444'},    // SW (Kun)
+    {deg: 90,  char: '☱', col: '#555'},    // W (Dui)
+    {deg: 135, char: '☰', col: '#444'},    // NW (Qian)
+    {deg: 180, char: '☵', col: '#0d47a1'}, // N (Kan) - Bottom
+    {deg: 225, char: '☶', col: '#444'},    // NE (Gen)
+    {deg: 270, char: '☳', col: '#2e7d32'}, // E (Zhen)
+    {deg: 315, char: '☴', col: '#444'}     // SE (Xun)
+  ];
+  bagua.forEach(b => {
+    const a = b.deg * Math.PI/180;
+    const trad = 6.8;
+    const tx = cx + trad * Math.sin(a);
+    const ty = cy - trad * Math.cos(a);
+    // Trigrams are radially oriented to point to the center
+    html += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="4.5" font-family="Arial, sans-serif" fill="${b.col}" transform="rotate(${b.deg},${tx},${ty})">${b.char}</text>`;
+  });
+
+  // 7. Discreet Location Info (Positioned to avoid Bagua overlap)
+  html += `<text x="${cx}" y="${cy-2.8}" text-anchor="middle" font-size="1.8" font-family="sans-serif" font-weight="bold" fill="rgba(0,100,80,0.5)">${S.locationData.city || ''}</text>`;
+  html += `<text x="${cx}" y="${cy+2.8}" text-anchor="middle" font-size="1.3" font-family="Share Tech Mono" fill="rgba(0,0,0,0.3)">${S.locationData.coords || ''}</text>`;
+
+  // 8. High-Precision Magnetic Needle
+  // Set to a standard resting position or slightly jittery
+  const nDeg = 179.5; // Slightly offset from perfect North/South for realism
+  html += `<g transform="rotate(${nDeg}, ${cx}, ${cy})" filter="url(#needleShadow)">
+      <!-- North Pointer (Black/Top in app, but actually South directed in traditional Paecheol) -->
+      <!-- Traditionally, the 'North' end of the needle is black, pointed towards North -->
+      <path d="M${cx-0.8},${cy} L${cx},${cy+11.5} L${cx+0.8},${cy} Z" fill="#212121" stroke="#000" stroke-width="0.1"/>
+      <!-- South Pointer (Red) -->
+      <path d="M${cx-0.8},${cy} L${cx},${cy-11.5} L${cx+0.8},${cy} Z" fill="#d32f2f" stroke="#b71c1c" stroke-width="0.1"/>
+      
+      <!-- Detailed Pivot -->
+      <circle cx="${cx}" cy="${cy}" r="1.4" fill="#eee" stroke="#666" stroke-width="0.3"/>
+      <circle cx="${cx}" cy="${cy}" r="0.8" fill="#fff" stroke="#999" stroke-width="0.1"/>
+      <circle cx="${cx}" cy="${cy}" r="0.3" fill="#333"/>
+      
+      <!-- Marker hole on Red end -->
+      <circle cx="${cx}" cy="${cy-9.2}" r="0.45" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="0.1"/>
+    </g>`;
+
+
+
+  // Cross lines
+  html+=`<line x1="${cx-r9}" y1="${cy}" x2="${cx+r9}" y2="${cy}" stroke="rgba(0,200,150,.25)" stroke-width="0.6"/>
+         <line x1="${cx}" y1="${cy-r9}" x2="${cx}" y2="${cy+r9}" stroke="rgba(0,200,150,.25)" stroke-width="0.6"/>`;
+
+  // SCAN animation group
+  html+=`<g id="scan-grp">
+    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-r8+5}"
+          stroke="rgba(68,255,219,.4)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy-r8+10}" r="3" fill="rgba(68,255,219,.5)" filter="url(#gf)"/>
+  </g>`;
+
+  // FLOW ARROWS (animated)
+  html+=`<g id="flow-arrows" opacity="0">
+    <path id="fa1" d="M${cx+r8} ${cy-30} Q${cx+r8+15} ${cy-30} ${cx+r9+5} ${cy-38}"
+      fill="none" stroke="rgba(68,255,219,.7)" stroke-width="1" class="flow-anim"/>
+    <path id="fa2" d="M${cx+r8} ${cy} L${cx+r9+5} ${cy}"
+      fill="none" stroke="rgba(68,255,219,.7)" stroke-width="1" class="flow-anim"/>
+    <path id="fa3" d="M${cx+r8} ${cy+30} Q${cx+r8+15} ${cy+30} ${cx+r9+5} ${cy+38}"
+      fill="none" stroke="rgba(68,255,219,.7)" stroke-width="1" class="flow-anim"/>
+  </g>`;
+
+  svg.innerHTML = html;
+}
+
+const var_gold_lit = '#f0d060';
+
+/* ═══════════════════════════════════════════════════
+   TERRAIN SVG
+═══════════════════════════════════════════════════ */
+function buildTerrain(hasResult=false,palacelabel=''){
+  const svg = document.getElementById('terrain-svg');
+  let html='';
+
+  // Sky
+  html+=`<defs>
+    <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ab8e8"/>
+      <stop offset="100%" stop-color="#2a8858"/>
+    </linearGradient>
+    <linearGradient id="tmtn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2d6040"/>
+      <stop offset="100%" stop-color="#0f2c1a"/>
+    </linearGradient>
+    <linearGradient id="tgnd" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a7050"/>
+      <stop offset="100%" stop-color="#1a3a28"/>
+    </linearGradient>
+  </defs>`;
+  html+=`<rect width="270" height="110" fill="url(#tsky)"/>`;
+  // Mountains
+  html+=`<polygon points="0,110 0,60 30,40 60,65 90,30 120,55 150,20 180,45 210,35 240,58 270,40 270,110"
+           fill="url(#tmtn)" opacity=".85"/>`;
+  // Ground / field
+  html+=`<ellipse cx="135" cy="98" rx="110" ry="20" fill="url(#tgnd)"/>`;
+  html+=`<path d="M25,110 Q135,85 245,110 Z" fill="#1a3a28"/>`;
+
+  // Contour lines
+  for(let i=0;i<3;i++){
+    const ry=15-i*4, cy2=100-i*8;
+    html+=`<ellipse cx="135" cy="${cy2}" rx="${80-i*10}" ry="${ry}" fill="none" stroke="rgba(0,180,120,.3)" stroke-width=".5" stroke-dasharray="4 3"/>`;
+  }
+
+  if(hasResult){
+    // Grave marker (묘)
+    html+=`<rect x="118" y="80" width="12" height="8" rx="2" fill="rgba(80,60,20,.8)" stroke="rgba(200,169,62,.6)" stroke-width=".5"/>`;
+    html+=`<text x="124" y="87" text-anchor="middle" dominant-baseline="middle" font-size="5" fill="#d4af37" font-family="Noto Serif KR,serif">묘</text>`;
+    // Hyeol (穴) marker
+    html+=`<circle cx="135" cy="88" r="7" fill="none" stroke="${'#44ffdb'}" stroke-width="1"/>`;
+    html+=`<circle cx="135" cy="88" r="3" fill="rgba(68,255,219,.5)" stroke="rgba(68,255,219,.8)" stroke-width=".8"/>`;
+    html+=`<text x="135" y="99" text-anchor="middle" font-size="5.5" fill="#44ffdb" font-family="Noto Serif KR,serif">穴</text>`;
+    // Label
+    if(palacelabel){
+      html+=`<text x="170" y="88" font-size="6" fill="rgba(240,208,96,.85)" font-family="Noto Serif KR,serif">${palacelabel}</text>`;
+    }
+    // Dragon vein flow arrow
+    html+=`<path d="M135,30 Q140,55 135,78" fill="none" stroke="rgba(240,208,96,.45)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrowhead)"/>`;
+    html+=`<defs><marker id="arrowhead" markerWidth="4" markerHeight="3" refX="2" refY="1.5" orient="auto"><polygon points="0 0, 4 1.5, 0 3" fill="rgba(240,208,96,.6)"/></marker></defs>`;
+  }
+
+  svg.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════
+   DIRECTION CHANGE HANDLERS
+═══════════════════════════════════════════════════ */
+function onDragonChange(){
+  const idx = document.getElementById('sel-dragon').value;
+  if(idx===''){S.dragon=null;buildDial(0);buildCompass();return;}
+  S.dragon = DIR24[+idx];
+  const d = S.dragon;
+  buildDial(d.deg);
+  // 파구가 선택된 경우 파구 기반 국 우선, 없으면 입수룡 궁 기반
+  S.bureau = (S.pagu && PAGU_BUREAU[S.pagu.char])
+    ? PAGU_BUREAU[S.pagu.char]
+    : BUREAU_FOR_PALACE[d.palace];
+  buildCompass(S.dragon, S.shui, S.pagu);
+}
+
+function onShuiChange(){
+  const idx = document.getElementById('sel-shui').value;
+  if(idx===''){S.shui=null;buildCompass(S.dragon,null,S.pagu);return;}
+  S.shui = DIR24[+idx];
+  buildCompass(S.dragon, S.shui, S.pagu);
+}
+
+function onPaguChange(){
+  const idx = document.getElementById('sel-pagu').value;
+  if(idx===''){S.pagu=null;buildCompass(S.dragon,S.shui,null);return;}
+  S.pagu = DIR24[+idx];
+  // 파구 방위로 국(局) 재계산
+  if(PAGU_BUREAU[S.pagu.char]){
+    S.bureau = PAGU_BUREAU[S.pagu.char];
+  } else if(S.dragon){
+    S.bureau = BUREAU_FOR_PALACE[S.dragon.palace];
+  }
+  buildCompass(S.dragon, S.shui, S.pagu);
+}
+
+/* ═══════════════════════════════════════════════════
+   본명궁 CALCULATION
+═══════════════════════════════════════════════════ */
+function digitSum(n){while(n>9)n=[...String(n)].reduce((a,b)=>a+(+b),0);return n;}
+
+function calcMyunggung(){
+  const genderEl = document.getElementById('sel-gender');
+  const gender = genderEl ? genderEl.value : '';
+  const birthDate = document.getElementById('birth-date').value;
+  const calendarEl = document.getElementById('sel-calendar');
+  const calendar = calendarEl ? calendarEl.value : 'solar';
+
+  if (!gender || !birthDate) {
+    document.getElementById('myung-result').textContent = '— (모름)';
+    S.person = { birth: '모름', gender: '모름', cal: '—', result: '—' };
+    return;
+  }
+
+  const year = new Date(birthDate).getFullYear();
+  const actualDs = digitSum(year);
+  let num;
+  if(gender==='m') num = (10 - actualDs % 9) % 9 || 9;
+  else             num = (5  + actualDs % 9) % 9 || 9;
+
+  const gung = MYUNGGUNG[num];
+  const gungHanja = ['','감(坎)','곤(坤)','진(震)','손(巽)','중(中)','건(乾)','태(兌)','간(艮)','이(離)'][num];
+  const yearStr = year+'년생';
+  const calStr = calendar==='solar'?'양력(陽)':calendar==='lunar'?'음력(陰)':'윤달(閏)';
+  
+  const resTxt = `${yearStr} · 본명궁: ${gung}宮 (${gungHanja})`;
+  document.getElementById('myung-result').textContent = resTxt;
+  
+  S.person = {
+    birth: birthDate,
+    gender: gender==='m'?'남(男)':'여(女)',
+    cal: calStr,
+    result: `${gung}宮 (${gungHanja})`
+  };
+}
+
+function onBirthChange(){ calcMyunggung(); }
+
+/* ═══════════════════════════════════════════════════
+   LOG HELPER
+═══════════════════════════════════════════════════ */
+let logLines = [];
+function addLog(txt, col=''){
+  logLines.push(`<span style="color:${col||'var(--txt2)'}">${txt}</span>`);
+  document.getElementById('log-area').innerHTML = logLines.slice(-12).join('<br>');
+}
+
+/* ═══════════════════════════════════════════════════
+   SIMULATION
+═══════════════════════════════════════════════════ */
+function runSimulation(){
+  // if(!S.dragon){alert('입수룡을 선택해주세요.');return;}
+  // if(!S.shui)  {alert('득수 방위를 선택해주세요.');return;}
+  // if(!S.pagu)  {alert('파구 방위를 선택해주세요.');return;}
+
+  logLines=[];
+  const btn=document.getElementById('sim-btn');
+  btn.classList.add('running');
+  btn.textContent='분석 중...';
+
+  document.getElementById('confirm-btn').className='confirm-btn';
+  document.getElementById('efill').style.width='0%';
+  document.getElementById('epct').textContent='—';
+  document.getElementById('res-text').textContent='처리 중...';
+  ['gh1','gh2','gh3'].forEach(id=>document.getElementById(id).className='gh-item');
+
+  // 분석 결과 카드 초기화
+  const arEl = document.getElementById('analysis-result');
+  if(arEl){ arEl.innerHTML=''; arEl.style.display='none'; }
+  document.getElementById('log-area').innerHTML='';
+
+  // Start compass scan animation
+  const scn=document.getElementById('scan-grp');
+  if(scn) scn.style.animation='scan-rotate 2.5s linear infinite';
+  const fa=document.getElementById('flow-arrows');
+  if(fa) fa.style.opacity='1';
+
+  const rot = document.getElementById('sel-rotation').value;
+  S.rotation = rot;
+
+  addLog('▶ 시뮬레이션 시작...','var(--teal)');
+  if (S.dragon) addLog(`  입수룡: ${S.dragon.char}(${S.dragon.kor}) · ${S.dragon.palace}宮`);
+  if (S.shui && S.pagu) addLog(`  득수: ${S.shui.char}(${S.shui.kor}) · 파구: ${S.pagu.char}(${S.pagu.kor})`);
+  
+  if (!S.dragon || !S.shui || !S.pagu) {
+    addLog(`  지리 데이터 미입력 — 인명 및 택일 분석을 수행합니다.`, 'var(--txt2)');
+  }
+  addLog(`  분석 일자: ${document.getElementById('taikil-date').value}`, 'var(--gold-lt)');
+
+  // ── STEP 1: 용상팔살 (500ms)
+  setTimeout(()=>{
+    const palsalChar = (S.dragon && S.dragon.palace) ? PALSAL[S.dragon.palace] : '—';
+    const palsalHit = S.dragon && S.shui && S.pagu && (S.shui.char===palsalChar || S.pagu.char===palsalChar);
+    if(palsalHit){
+      addLog(`⚠ 용상팔살 위반! ${palsalChar}방 → 수법 불합격`,'var(--red)');
+    } else if (S.dragon) {
+      addLog(`✓ 용상팔살 무결: ${palsalChar}방 물 없음`,'var(--teal)');
+    } else {
+      addLog(`  용상팔살: 입수룡 정보 없음 (판단 보류)`,'var(--txt3)');
+    }
+  }, 500);
+
+  // ── STEP 2: 12포태 (1200ms)
+  setTimeout(()=>{
+    if (!S.dragon || !S.pagu || !S.shui) {
+      addLog(`─ 12포태 분석 생략 (지리 데이터 부족) ─`,'var(--txt3)');
+      S.shuiStage = '—'; S.paguStage = '—'; S.bureau = '—';
+      return;
+    }
+    // 파구 방위로 국(局) 우선 판별 → 없으면 입수룡 궁 기반
+    const bureauByPagu = PAGU_BUREAU[S.pagu.char];
+    const bureau = bureauByPagu || BUREAU_FOR_PALACE[S.dragon.palace];
+    S.bureau = bureau;
+
+    const paguSrc = bureauByPagu
+      ? `파구 ${S.pagu.char}(${S.pagu.kor}) → ${bureau}국 확정`
+      : `입수룡 ${S.dragon.palace}宮 → ${bureau}국 (파구 방위 미매칭)`;
+
+    const portaeMap = PORTAE[bureau];
+    const shuiStage = portaeMap[S.shui.char] || '—';
+    const paguStage  = portaeMap[S.pagu.char]  || '—';
+    S.shuiStage = shuiStage;
+    S.paguStage  = paguStage;
+
+    const paguInfo     = PAGU_NAME[S.pagu.char];
+    const paguTypeName = paguInfo ? paguInfo.type : '';
+    const paguSubName  = paguInfo ? paguInfo.sub  : '';
+    const hyangInfo    = PAGU_HYANG[paguTypeName] || null;
+    const rokInfo      = PAGU_ROK[paguSubName]    || null;
+    S.rokInfo = rokInfo;
+
+    // 파(破) 4단계 위계 구조 출력
+    addLog(`■ 파(破)의 4단계 분석 ■`, 'var(--teal)');
+    addLog(`  [1단계 90°] 국(局) 구분`,'var(--txt2)');
+    addLog(`    → ${bureau}국 (${bureau==='水'?'수':bureau==='木'?'목':bureau==='火'?'화':'금'}국) 확정`, 'var(--teal)');
+    addLog(`  [2단계 30°] 향법(向法) 결정`,'var(--txt2)');
+    addLog(`    → ${paguTypeName||'—'}${ hyangInfo?' · '+hyangInfo.hyang:'' }`, 'var(--gold-lt)');
+    if(hyangInfo) addLog(`       ${hyangInfo.desc}`,'var(--txt3)');
+    addLog(`  [3단계 15°] 방향(方向) 결정`,'var(--txt2)');
+    addLog(`    → ${paguSubName||'—'} · ${paguSubName==='천간파(天干破)'?'천간향(天干向)':'지지향(地支向)'}`, 'var(--gold-lt)');
+    addLog(`  [4단계  0°] 패철 정혈(定穴)`,'var(--txt2)');
+    addLog(`    → ${ rokInfo ? rokInfo.rok+' — '+rokInfo.desc : '—' }`,
+      rokInfo && rokInfo.rok.includes('영록') ? 'var(--teal)' : 'var(--gold-lt)');
+
+    addLog(`─ 12포태 수법 (${bureau}局) ─`,'var(--teal)');
+
+    // 득수 포태 단계 기반 향법 조회 (DEUKSU_HYANG)
+    const deuksuRec = (DEUKSU_HYANG[bureau]||{})[shuiStage] || null;
+    S.deuksuRec = deuksuRec;
+
+    const shuiLabel = `${S.shui.char}: ${shuiStage} ${GOOD_SHUI.has(shuiStage)?'[吉]':'[凶]'}`;
+    addLog(`  득수 ${shuiLabel}`);
+    if(deuksuRec && GOOD_SHUI.has(shuiStage)){
+      const dc = deuksuRec.grade==='정발록' ? 'var(--teal)' : 'var(--gold-lt)';
+      addLog(`    → 득수향법: ${deuksuRec.hyangName} (${deuksuRec.grade})`, dc);
+      addLog(`      권장향: ${deuksuRec.jwaHyang.join(' / ')}`, 'var(--txt2)');
+    }
+    addLog(`  파구 ${S.pagu.char}: ${paguStage}  ${GOOD_PAGU.has(paguStage)?'[吉]':'[凶]'}`);
+
+
+  }, 1200);
+
+  // ── STEP 3: 삼합 & 향법 운용표 조회 (2000ms)
+  setTimeout(()=>{
+    if (!S.dragon || !S.pagu) {
+      addLog(`─ 향법 분석 생략 (입수룡/파구 정보 없음) ─`,'var(--txt3)');
+      S.hyangRec = null; S.hyangGrade = null;
+      return;
+    }
+    const samhap = S.bureau==='木'?'亥卯未':S.bureau==='火'?'寅午戌':S.bureau==='金'?'巳酉丑':'申子辰';
+    const paguInfo    = PAGU_NAME[S.pagu.char];
+    const paguTypeName = paguInfo ? paguInfo.type : '';
+    const paguSubName  = paguInfo ? paguInfo.sub  : '';
+
+    // HYANG_TABLE 조회
+    const htBureau = HYANG_TABLE[S.bureau]  || {};
+    const htType   = htBureau[paguTypeName] || {};
+    const htRec    = htType[paguSubName]    || null;
+    S.hyangRec = htRec;
+
+    addLog(`─ 향법 운용표 조회 (${S.bureau}局 · ${paguTypeName}) ─`,'var(--teal)');
+    if(htRec){
+      const gradeInfo = HYANG_GRADE[htRec.hyangName] || null;
+      S.hyangGrade = gradeInfo;
+
+      const gradeColor = gradeInfo
+        ? (gradeInfo.rank===1 ? 'var(--teal)' : gradeInfo.rank===2 ? 'var(--gold-lt)' : 'var(--txt2)')
+        : 'var(--txt2)';
+
+      addLog(`  향법명: ${htRec.hyangName}`, 'var(--gold-lt)');
+      if(gradeInfo){
+        addLog(`  향법 등급: ${gradeInfo.grade} — ${gradeInfo.desc}`, gradeColor);
+      }
+      addLog(`  권장 좌향: ${htRec.jwaHyang.join(' / ')}`, 'var(--txt)');
+      addLog(`  득수 조건: ${htRec.condition}`, 'var(--txt2)');
+    } else {
+      addLog(`  ※ 향법 데이터 없음 — 파구 방위를 재확인하세요`, 'var(--red)');
+    }
+    addLog(`  삼합: ${S.bureau}국 (${samhap}) · 파구 기준: ${PAGU_BUREAU_DIRS[S.bureau]}`);
+
+  }, 2000);
+
+  // ── STEP 4: 정응정양 검증 (2900ms)
+  setTimeout(()=>{
+    const shuiGood = GOOD_SHUI.has(S.shuiStage);
+    const paguGood  = GOOD_PAGU.has(S.paguStage);
+    addLog(`─ 정응정양법 검증 ─`,'var(--teal)');
+    addLog(`  득수 판정: ${shuiGood?'합격(吉)':'불합격(凶)'}`,shuiGood?'var(--teal)':'var(--red)');
+    addLog(`  파구 판정: ${paguGood?'합격(吉)':'불합격(凶)'}`,paguGood?'var(--teal)':'var(--red)');
+
+  }, 2900);
+
+  // ── FINAL RESULTS (4000ms)
+  setTimeout(()=>{
+    const scn2=document.getElementById('scan-grp');
+    if(scn2) scn2.style.animation='';
+
+    const shuiGood = GOOD_SHUI.has(S.shuiStage);
+    const paguGood  = GOOD_PAGU.has(S.paguStage);
+    const allGood   = shuiGood && paguGood;
+    const pairInfo  = DIR_PAIRS[S.dragon.palace];
+
+    // Rebuild compass with highlights
+    buildCompass(S.dragon, S.shui, S.pagu);
+
+    // 향법 운용표 기반 결과
+    const score = (shuiGood?50:15) + (paguGood?48:10);
+    const pct   = Math.min(98, score);
+    const hyangRec = S.hyangRec;
+    const resMain  = (allGood && hyangRec)
+      ? `${S.bureau}局 · ${hyangRec.hyangName} · ${hyangRec.jwaHyang[0]}`
+      : `결과: 조건 미충족 — 재검토 필요`;
+
+    document.getElementById('res-text').textContent = (S.dragon && S.pagu && allGood) ? resMain : "인명 및 택일 분석 완료";
+    document.getElementById('res-text').style.color = (S.dragon && S.pagu && allGood) ? 'var(--gold-lt)' : 'var(--teal-lt)';
+
+    // Terrain — 권장 좌향 기반 레이블
+    buildTerrain(true, hyangRec ? hyangRec.jwaHyang[0] : pairInfo.facing[1]+'향');
+
+    // Energy bar
+    setTimeout(()=>{
+      const eRow = document.querySelector('.erow');
+      if (eRow) eRow.style.display = (S.dragon && S.shui && S.pagu) ? 'flex' : 'none';
+      document.getElementById('efill').style.width=pct+'%';
+      document.getElementById('epct').textContent=pct+'%';
+    }, 200);
+
+    // 길흉 판단
+    if(allGood){
+      setTimeout(()=>document.getElementById('gh1').className='gh-item on fadeup',300);
+      setTimeout(()=>document.getElementById('gh2').className='gh-item on fadeup',600);
+      setTimeout(()=>document.getElementById('gh3').className='gh-item on fadeup',900);
+    } else if(shuiGood || paguGood){
+      setTimeout(()=>document.getElementById('gh3').className='gh-item on fadeup',300);
+    }
+
+    // Confirm button
+    if(allGood) document.getElementById('confirm-btn').className='confirm-btn on';
+
+    addLog(`─ 최종 판정 ─`,'var(--gold)');
+    addLog(`  에너지 지수: ${pct}%`,allGood?'var(--teal)':'var(--txt2)');
+    if(S.rokInfo){
+      const isYeong = S.rokInfo.rok.includes('영록');
+      addLog(`  록(祿) 등급: ${S.rokInfo.rok}`, isYeong?'var(--teal)':'var(--gold-lt)');
+    }
+    if(allGood && hyangRec){
+      addLog(`  향법명: ${hyangRec.hyangName}`, 'var(--gold-lt)');
+      addLog(`  권장 좌향: ${hyangRec.jwaHyang.join(' / ')}`, 'var(--txt)');
+      addLog(`  발복 예측: ${hyangRec.palbok}`, 'var(--txt2)');
+    }
+    addLog(allGood?`✦ 정혈 합격 — ${S.bureau}局 향법 적용 완료`:
+      `◎ 재검토 권장 — 수법 조건 미충족`
+      ,allGood?'var(--gold)':'var(--red)');
+    addLog('▶ 시뮬레이션 완료','var(--teal)');
+
+    // ── 분석 결과 카드 채우기 ──
+    const G = (t,c)=>`<span style="color:${c||'var(--txt2)'}">${t}</span>`;
+    
+    // 최종 리포트 제목 결정 (통합 감결)
+    const hasGeo = S.dragon && S.pagu;
+    const reportTitle = hasGeo ? "지리·인명·택일 통합 감결서" : "인명 및 택일 특별 감결서";
+    
+    let ar = `<div style="text-align:center; margin-bottom:12px; border:2px double var(--gold); padding:8px; background:rgba(200,169,62,0.05);">
+                <div style="font-size:0.9rem; font-weight:900; color:var(--gold-lt); letter-spacing:0.2em;">${reportTitle}</div>
+                <div style="font-size:0.6rem; color:var(--txt3); margin-top:4px;">풍수 원전 이기론 및 전통 감결 체계 적용</div>
+              </div>`;
+
+    if (hasGeo && S.shui) {
+      const paguInfo2   = PAGU_NAME[S.pagu.char];
+      const paguTypeName2 = paguInfo2 ? paguInfo2.type : '—';
+      const paguSubName2  = paguInfo2 ? paguInfo2.sub  : '—';
+      const hyangInfo2  = PAGU_HYANG[paguTypeName2] || null;
+      const rokInfo2    = S.rokInfo;
+      const shuiStage2  = S.shuiStage || '—';
+      const paguStage2  = S.paguStage || '—';
+      const samhap2     = S.bureau==='木'?'亥卯未':S.bureau==='火'?'寅午戌':S.bureau==='金'?'巳酉丑':'申子辰';
+      const bureauKor   = S.bureau==='水'?'수':S.bureau==='木'?'목':S.bureau==='火'?'화':'금';
+
+      // 국 판별
+      ar += G(`─ 국(局) 판별: 파구 ${S.pagu.char}(${S.pagu.kor}) → ${S.bureau}국(${bureauKor}) 확정 ─`, 'var(--teal)') + '<br>';
+      ar += `  ${G('파구 유형:','var(--txt3)')} ${G(S.pagu.char+'('+S.pagu.kor+') = '+paguTypeName2, 'var(--gold-lt)')}<br>`;
+      if(paguSubName2) ar += `  ${G('세분류:','var(--txt3)')} ${G(paguSubName2, 'var(--txt)')}<br>`;
+
+    // 2. 水流 (Water Flow) 분석
+    ar += '<br>' + G('2. 水流 (Water Flow) 분석', 'var(--teal)') + '<br>';
+    const shuiGit = GOOD_SHUI.has(shuiStage2);
+    const paguGit = GOOD_PAGU.has(paguStage2);
+    const rotDisp = S.rotation === 'left' ? G('좌선수(左旋水) ↩', 'var(--gold-lt)') : G('우선수(右旋水) ↪', 'var(--gold-lt)');
+
+    // Cardinal mapping for degree display
+    const getCard = d => {
+      if(d>=337.5 || d<22.5) return 'N';
+      if(d<67.5) return 'NE';
+      if(d<112.5) return 'E';
+      if(d<157.5) return 'SE';
+      if(d<202.5) return 'S';
+      if(d<247.5) return 'SW';
+      if(d<292.5) return 'W';
+      return 'NW';
+    };
+
+    if(S.shui) {
+      const sDeg = Math.round(S.shui.deg);
+      ar += `  ${G('득수:', 'var(--txt3)')}<br>`;
+      ar += `    ${G(S.shui.char+' ('+S.shui.kor+') — '+S.shui.palace+'宮 '+getCard(S.shui.deg)+' '+sDeg+'°', 'var(--gold-lt)')}<br>`;
+      ar += `    ${G(sDeg+'°', 'var(--teal-lt)')}<br>`;
+      ar += `  ${G('▲', 'var(--teal-lt)')}<br>`;
+    } else {
+      ar += `  ${G('득수', 'var(--txt3)')}<br>`;
+      ar += `    ${G('없음', 'var(--red)')}<br>`;
+    }
+    
+    if(S.pagu) {
+      const pDeg = Math.round(S.pagu.deg);
+      ar += `  ${G('파구:', 'var(--txt3)')}<br>`;
+      ar += `    ${G(S.pagu.char+' ('+S.pagu.kor+') — '+S.pagu.palace+'宮 '+pDeg+'°', 'var(--gold-lt)')}<br>`;
+      ar += `    ${G(pDeg+'°', 'var(--teal-lt)')}<br>`;
+    } else {
+      ar += `  ${G('파구', 'var(--txt3)')}<br>`;
+      ar += `    ${G('없음', 'var(--red)')}<br>`;
+    }
+
+    ar += `  ${G('수류 방향:', 'var(--txt3)')} ${rotDisp}<br>`;
+    
+    if(rokInfo2) ar += `  ${G('록(祿):', 'var(--txt3)')} ${G(rokInfo2.rok+' — '+rokInfo2.desc, rokInfo2.rok.includes('영록')?'var(--teal)':'var(--gold-lt)')}<br>`;
+
+    // 삼합국 분석
+    ar += '<br>' + G(`─ 삼합국 분석 ─`, 'var(--teal)') + '<br>';
+    ar += `  ${G('파구 '+S.pagu.char+' →', 'var(--txt3)')} ${G(S.bureau+'국 ('+samhap2+')', 'var(--txt)')}<br>`;
+    ar += `  ${G('◎ '+paguTypeName2, 'var(--gold-lt)')}<br>`;
+    if(hyangInfo2) ar += `  ${G(hyangInfo2.desc, 'var(--txt2)')}<br>`;
+    if(hyangRec){
+      ar += '<br>' + G('─ 권장 향법 ─', 'var(--teal)') + '<br>';
+      ar += `  ${G('향법명:', 'var(--txt3)')} ${G(hyangRec.hyangName, 'var(--gold-lt)')}<br>`;
+      const gradeInfo2 = HYANG_GRADE[hyangRec.hyangName];
+      if(gradeInfo2) ar += `  ${G('등급: '+gradeInfo2.grade, gradeInfo2.rank===1?'var(--teal)':'var(--gold-lt)')}<br>`;
+      ar += `  ${G('권장 좌향:', 'var(--txt3)')} ${G(hyangRec.jwaHyang.join(' / '), 'var(--txt)')}<br>`;
+      ar += `  ${G('득수 조건:', 'var(--txt3)')} ${G(hyangRec.condition, 'var(--txt2)')}<br>`;
+    }
+  }
+    // 3. 人命 (Person) 분석
+    const P = S.person || { birth:'모름', gender:'모름', cal:'—', result:'—' };
+    ar += '<br>' + G('3. 人命 (Person) 분석', 'var(--teal)') + '<br>';
+    ar += `  ${G('생년월일:', 'var(--txt3)')} ${G(P.birth==='모름'?'모름':P.birth, 'var(--txt)')}<br>`;
+    ar += `  ${G('양력/음력:', 'var(--txt3)')} ${G(P.cal, 'var(--txt)')}<br>`;
+    ar += `  ${G('성별:', 'var(--txt3)')} ${G(P.gender, 'var(--txt)')}<br>`;
+    ar += `  ${G('본명궁:', 'var(--txt3)')} ${G(P.result, 'var(--gold-lt)')}<br>`;
+
+    // 주택 사택 판별 (데이터가 있는 경우)
+    const gDirVal = document.getElementById('sel-gate').value;
+    const bDateVal = document.getElementById('birth-date').value;
+    const gVal = document.getElementById('sel-gender').value;
+    
+    if (bDateVal && gVal && gDirVal) {
+      const bYear = new Date(bDateVal).getFullYear();
+      const bm = getBonmyeong(bYear, gVal === 'm' ? 'male' : 'female');
+      if (bm) {
+        const hSide = PALYUSEONG_DIRS['東'].includes(gDirVal) ? '東' : '西';
+        const isMatch = bm.side === hSide;
+        const mCol = isMatch ? 'var(--teal-lt)' : 'var(--red)';
+        ar += `  ${G('본명궁 분류:', 'var(--txt3)')} ${G(bm.side+'四命', 'var(--txt)')}<br>`;
+        ar += `  ${G('주택 분류:', 'var(--txt3)')} ${G(hSide+'四宅', 'var(--txt)')}<br>`;
+        ar += `  ${G('인명-가택 합국:', 'var(--txt3)')} ${G(isMatch?'합국(合局) | 吉':'불합(不合) | 凶', mCol)}<br>`;
+        
+        // 인테리어 팁
+        const mp = PALACE_PROPS[document.getElementById('sel-master').value] || PALACE_PROPS['乾'];
+        ar += `<div style="margin-top:5px; padding:5px; background:rgba(200,169,62,0.1); border-radius:3px; border:1px solid rgba(200,169,62,0.2);">`;
+        ar += G('◈ 맞춤 비보(裨補) 가이드', 'var(--gold-lt)') + '<br>';
+        ar += `  ${G('행운색:', 'var(--txt3)')} ${G(mp.color, 'var(--txt)')}<br>`;
+        ar += `  ${G('비보물:', 'var(--txt3)')} ${G(mp.item, 'var(--txt)')}<br>`;
+        ar += `</div>`;
+      }
+    }
+
+    // 4. 擇日 (Auspicious Date/Time) 분석
+    const tdInput = document.getElementById('taikil-date');
+    const targetDate = (tdInput && tdInput.value) ? tdInput.value : (P.birth !== '모름' ? P.birth : new Date().toISOString().split('T')[0]);
+    const gj = getGanji(targetDate);
+    if (gj) {
+      ar += '<br>' + G('4. 擇日 (Auspicious Date/Time) 분석', 'var(--gold-lt)') + '<br>';
+      ar += `  ${G('기준 일자:', 'var(--txt3)')} ${G(targetDate, 'var(--txt)')}<br>`;
+      ar += `  ${G('당일 간지:', 'var(--txt3)')} ${G(gj.year+'년 '+gj.day+'일 (순:'+gj.sun+')', 'var(--teal-lt)')}<br>`;
+      
+      // 갑순 분석
+      const yearBranch = gj.year[1];
+      const gs = GAPSUN_TABLE[yearBranch];
+      if (gs) {
+        let gsType = '—';
+        if (gs.saeng.includes(gj.sun)) gsType = G('생갑순(生甲旬) — 혼인, 이사, 개업 길일', 'var(--teal-lt)');
+        else if (gs.sa.includes(gj.sun)) gsType = G('사갑순(死甲旬) — 장사, 사초, 석물 길일', 'var(--red)');
+        else if (gs.byung.includes(gj.sun)) gsType = G('병갑순(病甲旬) — 매사 신중 필요', 'var(--txt2)');
+        ar += `  ${G('갑순(旬) 판정:', 'var(--txt3)')} ${gsType}<br>`;
+      }
+
+      // 길시 분석
+      const dStem = gj.day[0];
+      const dBranch = gj.day[1];
+      const ce = CHEONEUL_TABLE[dStem];
+      const hd = HWANGDO_TABLE[dBranch];
+      
+      if (ce) {
+        ar += `  ${G('천을귀인 시:', 'var(--txt3)')} ${G(ce.join(', '), 'var(--gold-lt)')}<br>`;
+      }
+      if (hd) {
+        ar += `  ${G('황도 길시:', 'var(--txt3)')} `;
+        Object.entries(hd).forEach(([name, hour], i) => {
+          ar += G(name, 'var(--teal)') + G('('+hour+')', 'var(--txt2)') + (i<5?' ':'');
+        });
+        ar += '<br>';
+      }
+
+      // 12신(建除) 판정
+      if (gj.kunchu) {
+        ar += `  ${G('12신(建除):', 'var(--txt3)')} ${G(gj.kunchu.name, 'var(--teal-lt)')} — ${G(gj.kunchu.good?'吉:'+gj.kunchu.good:'', 'var(--teal)')} ${G(gj.kunchu.bad?'凶:'+gj.kunchu.bad:'', 'var(--red)')}<br>`;
+      }
+
+      // 28숙(28宿) 판정
+      if (gj.mansion) {
+        ar += `  ${G('28숙(28宿):', 'var(--txt3)')} ${G(gj.mansion.name, 'var(--teal-lt)')} — ${G(gj.mansion.good?'吉:'+gj.mansion.good:'', 'var(--teal)')} ${G(gj.mansion.bad?'凶:'+gj.mansion.bad:'', 'var(--red)')}<br>`;
+      }
+
+      // 9성(九星) 판정
+      if (gj.star) {
+        ar += `  ${G('당일9성(九星):', 'var(--txt3)')} ${G(gj.star.name, gj.star.color)} — ${gj.star.isGood ? G('[吉]','var(--teal)') : G('[凶]','var(--red)')}<br>`;
+      }
+
+      // 회도살 경고
+      if (HOIDOSAL_MAP[gj.day]) {
+        ar += `  ${G('회도살(回道殺):', 'var(--red)')} ${G(HOIDOSAL_MAP[gj.day].join(', ')+' 연생 주의', 'var(--txt2)')}<br>`;
+      }
+
+      // 택일 종합 판정 (우선순위 기반)
+      let gilCount = 0;
+      let bits = "";
+      if (gj.mansion && !gj.mansion.bad.includes('모든 일') && gj.mansion.good!='') { gilCount++; bits += "M"; }
+      if (gj.kunchu && gj.kunchu.good!='') { gilCount++; bits += "K"; }
+      if (gj.star && gj.star.isGood) { gilCount++; bits += "S"; }
+
+      let priority = 5;
+      if (bits.includes("M") && bits.includes("K") && bits.includes("S")) priority = 1;
+      else if (bits.includes("M") && bits.includes("S")) priority = 2;
+      else if (bits.includes("M") && bits.includes("K")) priority = 3;
+      else if (bits.includes("K") && bits.includes("S")) priority = 4;
+      else if (gilCount > 0) priority = 5;
+      else priority = 0;
+
+      if (priority > 0) {
+        const pNames = ["-","1순위(최상)","2순위(상)","3순위(중상)","4순위(중)","5순위(보통)"];
+        ar += `  ${G('총합택일등급:', 'var(--gold)')} ${G(pNames[priority], 'var(--gold-lt)')}<br>`;
+      }
+
+      // 동총운 분석 (음택일 경우에만)
+      const siteType = document.getElementById('sel-site-type').value;
+      if (siteType === 'eum' && S.pagu) {
+        const pJwa = S.pagu.char; 
+        const targetGroup = DONGCHONG_TABLE.find(row => row.group.some(g => g.includes(pJwa)));
+        if (targetGroup) {
+          const curYBranch = gj.year[1];
+          let luck = '—';
+          if (targetGroup.dali.includes(curYBranch)) luck = G('대리운(大利運) — 극길(極吉)', 'var(--teal-lt)');
+          else if (targetGroup.sori.includes(curYBranch)) luck = G('소리운(小利運) — 무난', 'var(--gold-lt)');
+          else if (targetGroup.jungsang.includes(curYBranch)) luck = G('중상운(重喪運) — 불리(흉)', 'var(--red)');
+          ar += `  ${G('동총운(動塚):', 'var(--txt3)')} ${luck}<br>`;
+        }
+      }
+    }
+
+    // 5. 陽宅 (Dwelling) 분석
+    const sType = document.getElementById('sel-site-type').value;
+    if (sType === 'yang') {
+      const gDir = document.getElementById('sel-gate').value;
+      const mDir = document.getElementById('sel-master').value;
+      const kDir = document.getElementById('sel-kitchen').value;
+      
+      const resCodeJM = (YANGTAEK_TABLE[gDir]||{})[mDir];
+      const resCodeJK = (YANGTAEK_TABLE[gDir]||{})[kDir];
+      
+      const pInfoM = PALYUSEONG_INFO[resCodeJM] || null;
+      const pInfoK = PALYUSEONG_INFO[resCodeJK] || null;
+
+      if (pInfoM && pInfoK) {
+        const gp = PALACE_PROPS[gDir];
+        const mp = PALACE_PROPS[mDir];
+        const kp = PALACE_PROPS[kDir];
+        
+        const yyMatch = gp.yy !== mp.yy ? '조화(吉)' : '편중(凶)';
+        const elMatch = ELEM_COMPAT[gp.elem][mp.elem] || '—';
+        const elCol = (elMatch==='生'||elMatch==='比') ? 'var(--teal-lt)' : 'var(--red)';
+
+        ar += '<br>' + G('5. 陽宅 (Dwelling) 분석', 'var(--gold-lt)') + '<br>';
+        ar += `  ${G('대문(門) 속성:', 'var(--txt3)')} ${G(gp.name+' | '+gp.yy+' | '+gp.elem, 'var(--txt)')}<br>`;
+        ar += `  ${G('안방(主) 속성:', 'var(--txt3)')} ${G(mp.name+' | '+mp.yy+' | '+mp.elem, 'var(--txt)')}<br>`;
+        ar += `  ${G('부엌(灶) 속성:', 'var(--txt3)')} ${G(kp.name+' | '+kp.yy+' | '+kp.elem, 'var(--txt)')}<br>`;
+        
+        ar += `  ${G('음양(陰陽) 조화:', 'var(--txt3)')} ${G(yyMatch, yyMatch==='조화(吉)'?'var(--teal-lt)':'var(--red)')}<br>`;
+        ar += `  ${G('오행(五行) 상성:', 'var(--txt3)')} ${G(elMatch==='生'?'상생(相生)':'상극(相剋)', elCol)}<br>`;
+
+        const colM = pInfoM.type==='吉' ? 'var(--gold-lt)' : 'var(--red)';
+        const colK = pInfoK.type==='吉' ? 'var(--gold-lt)' : 'var(--red)';
+        ar += `  ${G('안방 판정:', 'var(--txt3)')} ${G(pInfoM.house+' ('+pInfoM.name+')', colM)}<br>`;
+        ar += `  ${G('부엌 판정:', 'var(--txt3)')} ${G(pInfoK.house.replace('宅','灶')+' ('+pInfoK.name+')', colK)}<br>`;
+        
+        // 종합 판정
+        let synth = "보통";
+        if (pInfoM.type==='吉' && pInfoK.type==='吉') synth = G("부귀가 보장되는 명택(名宅)", "var(--gold-lt)");
+        else if (pInfoM.type==='吉' || pInfoK.type==='吉') synth = G("평탄한 주거 환경", "var(--teal-lt)");
+        else synth = G("개선이 시급한 흉가(凶家)", "var(--red)");
+        
+        ar += `  ${G('평가 요약:', 'var(--txt3)')} ${synth}<br>`;
+        ar += `  ${G('부엌 분석:', 'var(--txt3)')} ${G(pInfoK.desc, 'var(--txt2)')}<br>`;
+      }
+    }
+
+    // (동적으로 생성된 분석 리포트 종료)
+
+    const arEl = document.getElementById('analysis-result');
+    arEl.innerHTML = ar;
+    arEl.style.display = 'block';
+
+    btn.classList.remove('running');
+    btn.innerHTML='가상 시뮬레이션 가동<span class="sdot"></span>';
+    S.simDone=true;
+  }, 4000);
+}
+
+/* ═══════════════════════════════════════════════════
+   TOOLTIP
+═══════════════════════════════════════════════════ */
+function showTip(e,txt){
+  const t=document.getElementById('tooltip');
+  t.textContent=txt;t.style.display='block';
+  t.style.left=(e.pageX+10)+'px';t.style.top=(e.pageY-28)+'px';
+}
+function hideTip(){document.getElementById('tooltip').style.display='none'}
+
+/* ═══════════════════════════════════════════════════
+   POPUP MODAL (Layers 1~9)
+═══════════════════════════════════════════════════ */
+function drawSamhapSvg(type) {
+  const ss = ["壬子","癸丑","艮寅","甲卯","乙辰","巽巳","丙午","丁未","坤申","庚酉","辛戌","乾亥"]; 
+  let sIndex=0; let bCol=""; let hanja="";
+  if(type==='금') { sIndex=5; bCol="#d4af37"; hanja="金"; }
+  else if(type==='수') { sIndex=8; bCol="#4fc3f7"; hanja="水"; }
+  else if(type==='목') { sIndex=11; bCol="#81c784"; hanja="木"; }
+  else if(type==='화') { sIndex=2; bCol="#e57373"; hanja="火"; }
+
+  const potae = ["生","浴","帶","官","旺","衰","病","死","墓","絶","胎","養"];
+  let wMap = []; // Water Po-Tae (Outer, Right-turning)
+  let dMap = []; // Dragon Po-Tae (Inner, Left-turning)
+  
+  let myoIdx = (sIndex + 8) % 12; // The mountain index where 墓(Myo) aligns for the given bureau
+  
+  for(let i=0; i<12; i++){ 
+    // Outer ring: Right-turning (CW) sequence starting with 生 at sIndex
+    wMap.push(potae[(i - sIndex + 12) % 12]); 
+    
+    // Inner ring: Left-turning (CCW) sequence anchored to 墓(8) at myoIdx
+    dMap.push(potae[(8 - (i - myoIdx) + 24) % 12]); 
+  }
+
+  let svg = '<svg viewBox="0 0 200 200" style="width:100%; max-width:280px; margin:0 auto 10px; display:block; background:rgba(0,10,10,0.4); border-radius:50%; box-shadow:0 0 10px rgba(0,0,0,0.5);">';
+  
+  // Outer circle r=99
+  svg += '<circle cx="100" cy="100" r="99" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>';
+  // Separator 1 r=82
+  svg += '<circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>';
+  // Separator 2 r=62
+  svg += '<circle cx="100" cy="100" r="62" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>';
+  // Inner circle r=44
+  svg += '<circle cx="100" cy="100" r="44" fill="none" stroke="'+bCol+'" stroke-width="1.5"/>';
+
+  for(let i=0; i<12; i++){
+    let rad = (i*30 - 90) * Math.PI/180;
+    // 12 Double-mountain boundary lines (every 30 deg, offset by 15 deg from center)
+    let lineAng = (i*30 - 90 + 15) * Math.PI/180;
+    let x1 = 100+44*Math.cos(lineAng); let y1 = 100+44*Math.sin(lineAng);
+    let x2 = 100+99*Math.cos(lineAng); let y2 = 100+99*Math.sin(lineAng);
+    svg += '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>';
+
+    // 24 Mountain boundary lines (only in the middle ring r=62 to r=82)
+    let lineAng2 = (i*30 - 90 - 15) * Math.PI/180;
+    let x3 = 100+62*Math.cos(lineAng2); let y3 = 100+62*Math.sin(lineAng2);
+    let x4 = 100+82*Math.cos(lineAng2); let y4 = 100+82*Math.sin(lineAng2);
+    svg += '<line x1="'+x3+'" y1="'+y3+'" x2="'+x4+'" y2="'+y4+'" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>';
+
+    let wp = wMap[i];
+    let dp = dMap[i];
+    
+    // Highlight if 生,旺,墓 for Water Po-Tae
+    let isSWM = (wp==="生"||wp==="旺"||wp==="墓");
+    let tcol = isSWM ? bCol : "rgba(255,255,255,0.5)";
+    let fw = isSWM ? "bold" : "normal";
+
+    if(isSWM) { 
+      let rStart = lineAng2; // -15 deg
+      let rEnd = lineAng;    // +15 deg
+      let px1 = 100 + 44*Math.cos(rStart); let py1 = 100 + 44*Math.sin(rStart);
+      let px2 = 100 + 44*Math.cos(rEnd);   let py2 = 100 + 44*Math.sin(rEnd);
+      let px3 = 100 + 99*Math.cos(rEnd);   let py3 = 100 + 99*Math.sin(rEnd);
+      let px4 = 100 + 99*Math.cos(rStart); let py4 = 100 + 99*Math.sin(rStart);
+      svg += '<polygon points="'+px1+','+py1+' '+px2+','+py2+' '+px3+','+py3+' '+px4+','+py4+'" fill="'+bCol+'" opacity="0.1"/>';
+    }
+
+    // Draw Water Po-Tae (Outer track: r=91)
+    let px_w = 100+91*Math.cos(rad); let py_w = 100+91*Math.sin(rad);
+    svg += '<text x="'+px_w+'" y="'+(py_w+3)+'" fill="'+tcol+'" font-size="9" font-weight="'+fw+'" text-anchor="middle">'+wp+'</text>';
+
+    // Draw Dragon Po-Tae (Inner track: r=54)
+    let px_d = 100+54*Math.cos(rad); let py_d = 100+54*Math.sin(rad);
+    svg += '<text x="'+px_d+'" y="'+(py_d+2)+'" fill="rgba(255,255,255,0.6)" font-size="7" text-anchor="middle">'+dp+'</text>';
+
+    // Draw 24 Mountains (Middle track: r=73)
+    let m1 = ss[i][0]; let m2 = ss[i][1];
+    let r1c = rad - 7.5*Math.PI/180; let r2c = rad + 7.5*Math.PI/180;
+    let mx1 = 100+73*Math.cos(r1c); let my1 = 100+73*Math.sin(r1c);
+    let mx2 = 100+73*Math.cos(r2c); let my2 = 100+73*Math.sin(r2c);
+    svg += '<text x="'+mx1+'" y="'+(my1+3)+'" fill="'+tcol+'" font-size="9" font-weight="'+fw+'" text-anchor="middle">'+m1+'</text>';
+    svg += '<text x="'+mx2+'" y="'+(my2+3)+'" fill="'+tcol+'" font-size="9" font-weight="'+fw+'" text-anchor="middle">'+m2+'</text>';
+  }
+
+  // Center Arrows
+  let s_rad = (sIndex*30 - 90) * Math.PI/180;         // 向 (Sheng)
+  let w_rad = (((sIndex+4)%12)*30 - 90) * Math.PI/180; // 龍 (Wang)
+  let m_rad = (((sIndex+8)%12)*30 - 90) * Math.PI/180; // 破 (Myo)
+
+  let sx = 100+33*Math.cos(s_rad); let sy = 100+33*Math.sin(s_rad);
+  let wx = 100+33*Math.cos(w_rad); let wy = 100+33*Math.sin(w_rad);
+  let mx = 100+33*Math.cos(m_rad); let my = 100+33*Math.sin(m_rad);
+  
+  // Arrow lines
+  svg += '<line x1="100" y1="100" x2="'+sx+'" y2="'+sy+'" stroke="'+bCol+'" stroke-width="1.5"/>';
+  svg += '<line x1="100" y1="100" x2="'+wx+'" y2="'+wy+'" stroke="'+bCol+'" stroke-width="1.5"/>';
+  svg += '<line x1="100" y1="100" x2="'+mx+'" y2="'+my+'" stroke="'+bCol+'" stroke-width="1.5"/>';
+  
+  // Arrowheads
+  const drawArrowHead = (angle, x, y) => {
+     let a1 = angle + 150 * Math.PI/180;
+     let a2 = angle - 150 * Math.PI/180;
+     let px1 = x + 6*Math.cos(a1); let py1 = y + 6*Math.sin(a1);
+     let px2 = x + 6*Math.cos(a2); let py2 = y + 6*Math.sin(a2);
+     return '<polygon points="'+x+','+y+' '+px1+','+py1+' '+px2+','+py2+'" fill="'+bCol+'"/>';
+  };
+  svg += drawArrowHead(s_rad, sx, sy);
+  svg += drawArrowHead(w_rad, wx, wy);
+  svg += drawArrowHead(m_rad, mx, my);
+
+  // Labels for the arrows (向, 龍, 破)
+  let slx = 100+20*Math.cos(s_rad + 20*Math.PI/180); let sly = 100+20*Math.sin(s_rad + 20*Math.PI/180);
+  let wlx = 100+20*Math.cos(w_rad + 20*Math.PI/180); let wly = 100+20*Math.sin(w_rad + 20*Math.PI/180);
+  let mlx = 100+20*Math.cos(m_rad + 20*Math.PI/180); let mly = 100+20*Math.sin(m_rad + 20*Math.PI/180);
+
+  svg += '<text x="'+slx+'" y="'+(sly+3)+'" fill="'+bCol+'" font-size="9" font-weight="bold" text-anchor="middle">向</text>';
+  svg += '<text x="'+wlx+'" y="'+(wly+3)+'" fill="'+bCol+'" font-size="9" font-weight="bold" text-anchor="middle">龍</text>';
+  svg += '<text x="'+mlx+'" y="'+(mly+3)+'" fill="'+bCol+'" font-size="9" font-weight="bold" text-anchor="middle">破</text>';
+
+  // Center circle and Hanja text
+  svg += '<circle cx="100" cy="100" r="11" fill="rgba(0,10,5,0.8)" stroke="'+bCol+'" stroke-width="1.5"/>';
+  svg += '<text x="100" y="100" dy="4" fill="'+bCol+'" font-size="12" font-weight="bold" text-anchor="middle">'+hanja+'</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+function openLayerInfo(layer) {
+  const title = document.getElementById('modal-title');
+  const content = document.getElementById('modal-content');
+
+  let t = "";
+  let c = "";
+
+  switch(layer) {
+    case 1:
+      t = "1층 용상팔살 (龍上八殺)";
+      c = `
+        <p><strong>용상팔살(龍上八殺)</strong>은 입수룡(入首龍)의 방위에 따라 가장 흉하게 작용하는 특정 향(向)과 수(水)의 방위를 의미합니다. 풍수에서 가장 치명적인 살(殺)로 여겨집니다.</p><br>
+        <p class="highlight">만약 이 방위로 향(向)을 놓거나 물이 흘러나가면(破口), 인재가 끊기고 재물이 흩어지는 큰 화를 당한다고 보아 무덤이나 양택에서 반드시 피해야 합니다.</p><br>
+        <p><strong>[팔요풍 기본 원리: 坎龍坤兎 震山猴 巽鷄乾馬 兌蛇頭 艮虎離猪 감룡곤토 진산후 손계건마 태사두 간호이저]</strong></p>
+        <ul style="padding-left:15px; margin-top:5px; line-height:1.7;">
+          <li><strong>坎宮(임자계) 용맥</strong> ➔ <span class="highlight">辰(진)방</span> 향/수 흉</li>
+          <li><strong>坤宮(미곤신) 용맥</strong> ➔ <span class="highlight">卯(묘)방</span> 향/수 흉(수국자왕향)</li>
+          <li><strong>震宮(갑묘을) 용맥</strong> ➔ <span class="highlight">申(신)방</span> 향/수 흉(목국자생향)</li>
+          <li><strong>巽宮(진손사) 용맥</strong> ➔ <span class="highlight">酉(유)방</span> 향/수 흉(금국정왕향)</li>
+          <li><strong>乾宮(술건해) 용맥</strong> ➔ <span class="highlight">午(오)방</span> 향/수 흉(목국자왕향)</li>
+          <li><strong>兌宮(경유신) 용맥</strong> ➔ <span class="highlight">巳(사)방</span> 향/수 흉(금국정생향)</li>
+          <li><strong>艮宮(축간인) 용맥</strong> ➔ <span class="highlight">寅(인)방</span> 향/수 흉</li>
+          <li><strong>離宮(병오정) 용맥</strong> ➔ <span class="highlight">亥(해)방</span> 향/수 흉(화국자생향)</li>
+        </ul>
+        <br><p style="color:var(--txt2); font-size:0.85em;">이 원리는 팔괘의 오행이 서로 극(剋)하는 방향을 피하기 위한 논리(예: 감(水)은 진(土)에 극당함)에서 비롯됩니다.</p>
+      `;
+      break;
+    case 2:
+      t = "2층 팔요풍 (八曜風)";
+      c = `
+        <p><strong>팔요풍(八曜風)</strong>은 특정 궁위(방위)에서 불어오는 가장 흉하고 살기 띤 바람을 가리킵니다. 흔히 <strong>황천풍(黃泉風)</strong>이라고도 불립니다.</p><br>
+        <p>음택(혈)이나 양택(집) 주변의 산봉우리가 무너져 내렸거나, 지형이 V자형으로 깊고 협소하게 패인 '요풍곡(凹風谷)'의 지형이 특정 방위에 있으면, 그곳을 타고 들어오는 바람은 생기를 흩어지게 만듭니다.</p><br>
+        <p class="highlight">패철을 통해 이 방향(특히 제1층의 살방과 연계된 방위)에 골짜기나 함몰된 곳이 있는지 확인하며, 이 바람을 맞으면 후손에게 몹쓸 병이 발생하거나 가산이 탕진된다고 보아 철저히 가립니다.</p><br>
+        <ul style="padding-left:15px; margin-top:5px; line-height:1.7;">
+          <li><strong>입갑경병임향</strong> (갑향 목국, 경향 금국, 병향 화국, 임향 수국: 제왕향을 놓음)</li>
+          <li><strong>유건곤간손임관수</strong> (건수 수국, 곤수 금국, 간수 목국, 손수 화국: 좌측에 있는 각국의 임관수가 제왕향을 향해 흘러들면 구빈황천이 됨)</li>
+          <li><strong>임관위 상방출</strong> (각국의 제왕향을 놓았는데 우측의 물이 향상을 지나 해당 국의 건곤간손의 임관방으로 흘러나가면 살인대황천이 됨)</li>
+          <li><strong>입을신정계묘향</strong> (을향 수국, 신향 화국, 정향 목국, 계향 금국: 묘향)</li>
+          <li><strong>절수도충묘고</strong> (묘향을 놓고 각국 건곤간손의 절수가 우선한 다음 각국의 묘방으로 흘러나간다면 절수가 묘방을 충파하는 것으로 살인대황천이 됨)</li>
+        </ul>
+        <br>
+        <p><strong>[쌍산(雙山)을 방위 기준으로 한 황천풍]</strong></p>
+        <ul style="padding-left:15px; margin-top:5px; line-height:1.7;">
+          <li><strong>壬子(임자), 辛戌(신술)</strong> 룡 ➔ <span class="highlight">乾亥(건해)</span> 방</li>
+          <li><strong>癸丑(계축), 甲卯(갑묘)</strong> 룡 ➔ <span class="highlight">艮寅(간인)</span> 방</li>
+          <li><strong>乙辰(을진), 丙午(병오)</strong> 룡 ➔ <span class="highlight">巽巳(손사)</span> 방</li>
+          <li><strong>丁未(정미), 庚酉(경유)</strong> 룡 ➔ <span class="highlight">坤申(곤신)</span> 방</li>
+          <li><strong>乾亥(건해)</strong> 룡 ➔ <span class="highlight">辛戌(신술), 壬子(임자)</span> 방</li>
+          <li><strong>艮寅(간인)</strong> 룡 ➔ <span class="highlight">癸丑(계축), 甲卯(갑묘)</span> 방</li>
+          <li><strong>巽巳(손사)</strong> 룡 ➔ <span class="highlight">乙辰(을진), 丙午(병오)</span> 방</li>
+          <li><strong>坤申(곤신)</strong> 룡 ➔ <span class="highlight">丁未(정미), 庚酉(경유)</span> 방</li>
+        </ul>
+      `;
+      break;
+    case 3:
+      t = "3층 3합오행 (三合五行)";
+      c = `
+        <p><strong>3합오행 운용</strong>은 12지지(地支) 중 세 개를 하나로 묶어 거대한 국(局)의 오행을 결정하는 풍수 수법의 뼈대입니다.</p><br>
+        <p>자연의 기운이 <strong>생(生) - 왕(旺) - 묘(墓)</strong>의 순환 주기를 거친다는 윤회 사상에 기반합니다.</p><br>
+        <ul style="padding-left:15px; margin-top:5px; line-height:1.7;">
+          <li><span class="highlight">申子辰</span> (신자진) ➔ <strong>水국 (수국)</strong></li>
+          <li><span class="highlight">亥卯未</span> (해묘미) ➔ <strong>木국 (목국)</strong></li>
+          <li><span class="highlight">寅午戌</span> (인오술) ➔ <strong>火국 (화국)</strong></li>
+          <li><span class="highlight">巳酉丑</span> (사유축) ➔ <strong>金국 (금국)</strong></li>
+        </ul><br>
+        <p>이 층을 사용하여 지형 내 물(水)이 빠져나가는 <strong>파구(破口)</strong>를 중심으로 현재의 땅이 어느 국(局)에 해당하는지 판별하고, 12포태법(長生, 沐浴, 冠帶 ... 絶, 胎, 養)의 길흉을 세우는 핵심 기준선입니다.</p>
+      `;
+      break;
+    case 4:
+      t = "4층 지반정침 (地盤正針) : 래용·입향";
+      c = `
+        <p><strong>지반정침(地盤正針)</strong>은 패철(나경)의 근본이자 천, 지, 인 3반침 중 <span class="highlight">땅(地)의 기운을 다루는 기준선</span>입니다. 지구의 자기장인 <strong>자북(Magnetic North)</strong>과 완벽하게 일치합니다.</p><br>
+        <p>총 24방위(각 15도)로 나뉘며 다음과 같이 가장 중요한 뼈대 작업에 사용됩니다:</p>
+        <ol style="padding-left:15px; margin-top:5px; line-height:1.7;">
+          <li><strong>래용(來龍) 측정:</strong> 산맥(용맥)이 뻗어 내려와 기를 맺으려는 방향(입수룡)을 측정합니다. 즉, 혈로 들어오는 에너지를 재는 중심이 됩니다.</li>
+          <li><strong>양택 입향:</strong> 양택(집, 건물)에서 대문, 안방, 부엌 등의 좌향을 결정하고 동가(東家)/서가(西家)를 가를 때 기준이 됩니다.</li>
+          <li>다른 모든 층(천반봉침, 인반중침 등)이 <strong>이 4층을 기준</strong>으로 앞/뒤로 7.5도씩 이동하여 만들어집니다.</li>
+        </ol>
+        <br>
+        <hr style="border: 0; border-top: 1px dashed rgba(0,150,100,.5); margin: 10px 0;">
+        <p style="font-size:0.95em; color:var(--teal-lt);"><strong>6) 吉龍과 凶龍 (길룡과 흉룡)</strong></p>
+        <p style="font-size:0.65rem; color:var(--txt2); line-height:1.6; margin:5px 0;">
+          내룡이 배합룡이고 이기로 판단해, 양룡, 장생룡, 관대룡, 임관룡, 제왕룡이면, 이 용은 땅 속이 고운 흙으로 이루어진 생기충만한 곳이다. 또 절룡, 태룡, 병룡, 사룡, 묘룡이라면 비록 배합룡이긴 하지만 생기를 품을 수 없는 바위나 돌 혹은 흙과 자갈이 혼합된 땅이다. 목욕룡이면 어떤 경우든지 물구덩이거나 수맥이 지나가는 땅이니 피해야 하고, 쇠룡은 평지에서는 생기를 품은 길룡이나 산에서는 생기가 없는 흉룡이다.
+        </p>
+        <table border="1" cellpadding="3" style="border-collapse:collapse; width:100%; font-size:0.55rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4); margin-bottom:15px; line-height:1.3;">
+          <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+            <th style="padding:4px;">구분</th><th>내룡 이기</th><th>수국</th><th>목국</th><th>화국</th><th>금국</th><th>비고</th>
+          </tr>
+          <tr>
+            <td rowspan="3" style="background:rgba(0,50,30,.4); color:var(--teal-lt);">상격<br>길룡</td>
+            <td>장생룡</td><td>임자</td><td>갑묘</td><td>병오</td><td>경유</td><td>견밀하고<br>고운 흙</td>
+          </tr>
+          <tr>
+            <td>관대룡</td><td>신술</td><td>계축</td><td>을진</td><td>정미</td><td rowspan="2">단단하고</td>
+          </tr>
+          <tr>
+            <td>제왕룡</td><td>곤신</td><td>건해</td><td>간인</td><td>손사</td>
+          </tr>
+          <tr>
+            <td rowspan="2" style="background:rgba(0,50,30,.4); color:var(--teal-lt);">중격<br>길룡</td>
+            <td>양룡</td><td>계축</td><td>을진</td><td>정미</td><td>신술</td><td>까끌한 흙</td>
+          </tr>
+          <tr>
+            <td>임관룡</td><td>경유</td><td>임자</td><td>갑묘</td><td>병오</td><td rowspan="2">산: 흉룡<br>평야: 길룡</td>
+          </tr>
+          <tr>
+            <td style="background:rgba(0,50,30,.4); color:var(--teal-lt);">하격<br>길룡</td>
+            <td>쇠룡</td><td>정미</td><td>신술</td><td>계축</td><td>을진</td>
+          </tr>
+        </table>
+
+        <p style="font-size:0.95em; color:var(--teal-lt);"><strong>&lt;혈이 맺힌 내룡&gt;</strong></p>
+        <table border="1" cellpadding="2" style="border-collapse:collapse; width:100%; font-size:0.55rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4); margin-top:5px; line-height:1.3;">
+          <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+            <th colspan="2" style="padding:4px;">구분</th><th>기준</th><th>묘 파</th><th>절 파</th><th>태 파</th><th>비고(판별)</th>
+          </tr>
+          <!-- 수국 -->
+          <tr>
+            <td rowspan="4" style="background:rgba(0,50,30,.4); color:var(--teal-lt);">수국</td>
+            <td rowspan="2">우선</td>
+            <td>12포태</td><td>장생,양</td><td>장생,양</td><td>양룡</td><td rowspan="4">(수국)<br>을진,손사<br>병오</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>임자,계축</td><td>임자,계축</td><td>계축</td>
+          </tr>
+          <tr>
+            <td rowspan="2">좌선</td>
+            <td>12포태</td><td>제왕,임관</td><td>관대,임관</td><td>쇠룡</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>곤신,경유</td><td>신술,경유</td><td>정미</td>
+          </tr>
+          <!-- 목국 -->
+          <tr>
+            <td rowspan="4" style="background:rgba(0,50,30,.4); color:var(--teal-lt);">목국</td>
+            <td rowspan="2">우선</td>
+            <td>12포태</td><td>장생,양</td><td>장생,양</td><td>양룡</td><td rowspan="4">(목국)<br>정미,곤신<br>경유</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>갑묘,을진</td><td>갑묘,을진</td><td>을진</td>
+          </tr>
+          <tr>
+            <td rowspan="2">좌선</td>
+            <td>12포태</td><td>제왕,임관</td><td>관대,임관</td><td>쇠룡</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>건해,임자</td><td>계축,임자</td><td>신술</td>
+          </tr>
+          <!-- 화국 -->
+          <tr>
+            <td rowspan="4" style="background:rgba(0,50,30,.4); color:var(--teal-lt);">화국</td>
+            <td rowspan="2">우선</td>
+            <td>12포태</td><td>장생,양</td><td>장생,양</td><td>양룡</td><td rowspan="4">(화국)<br>신술,건해<br>임자</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>병오,정미</td><td>병오,정미</td><td>정미</td>
+          </tr>
+          <tr>
+            <td rowspan="2">좌선</td>
+            <td>12포태</td><td>제왕,임관</td><td>관대,임관</td><td>쇠룡</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>간인,갑묘</td><td>을진,갑묘</td><td>계축</td>
+          </tr>
+          <!-- 금국 -->
+          <tr>
+            <td rowspan="4" style="background:rgba(0,50,30,.4); color:var(--teal-lt);">금국</td>
+            <td rowspan="2">우선</td>
+            <td>12포태</td><td>장생,양</td><td>장생,양</td><td>양룡</td><td rowspan="4">(금국)<br>계축,간인<br>갑묘</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>경유,신술</td><td>경유,신술</td><td>신술</td>
+          </tr>
+          <tr>
+            <td rowspan="2">좌선</td>
+            <td>12포태</td><td>제왕,임관</td><td>관대,임관</td><td>쇠룡</td>
+          </tr>
+          <tr>
+            <td>쌍산</td><td>손사,병오</td><td>정미,병오</td><td>을진</td>
+          </tr>
+        </table>
+
+        <p style="text-align:center; margin-top:20px; font-size:0.75rem; color:var(--teal);"><strong>— 국별 변국향법 및 12포태 종합표 —</strong></p>
+
+        <!-- 수국 -->
+        <details style="margin-top:5px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">1) 수국의 변국향법</summary>
+          <div style="padding:8px; font-size:0.6rem; color:var(--txt2);">
+            <p style="color:var(--teal-lt); margin-bottom:4px;">&lt;수국 변국향의 효험&gt;</p>
+            <ul style="padding-left:15px; line-height:1.5; margin-bottom:10px;">
+              <li>1) 묘파의 절처봉생향 [건좌손향, 해좌사향]... 부귀하고 장수하고 후손이 크게 번성한다.</li>
+              <li>2) 묘파의 사처봉왕향 [경좌갑향, 유좌묘향]... 발부발귀하고 오래 살고 인정이 흥왕한다.</li>
+              <li>3) 절파의 절처봉생향 [건좌손향]... 대부대귀하고 인정이 흥왕하고 남녀 모두 오래 산다.</li>
+              <li>4) 태파의 욕처봉왕향 [임좌병향]... 부귀쌍전하고 인정흥왕한다.</li>
+              <li>5) 태파의 절처봉생향 [건좌손향]... 부귀하고 복수쌍전한다.</li>
+            </ul>
+            <table border="1" cellpadding="2" style="border-collapse:collapse; width:100%; font-size:0.5rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4);">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th rowspan="2">구분</th><th rowspan="2">자연<br>흐름</th><th colspan="2">정국 향법</th><th colspan="3">변국 향법</th><th rowspan="2">비고</th>
+              </tr>
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>내룡</th><th>입향</th><th>내룡</th><th>향법</th><th>쌍산오행</th>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">묘파<br>(을진)</td>
+                <td>우선수</td><td>장생,양</td><td>정생향</td><td>장생,양</td><td>絶處逢生向</td><td>손사향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>제왕,관</td><td>정왕향</td><td>제왕,관</td><td>死處逢旺向</td><td>갑묘향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td style="color:var(--teal-lt);">절파<br>(손사)</td>
+                <td>좌선수</td><td>관대,관</td><td>정묘향</td><td>-</td><td>絶處逢生向</td><td>손향</td><td>천간,백보<br>전란없음</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">태파<br>(병)</td>
+                <td>우선수</td><td>양룡</td><td>태향</td><td>양룡</td><td>浴處逢旺向</td><td>-</td><td>천간<br>백보전란</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>쇠,제왕</td><td>쇠향</td><td>관대,제왕</td><td>絶處逢生向</td><td>손향</td><td>천간,평야</td>
+              </tr>
+            </table>
+          </div>
+        </details>
+
+        <!-- 목국 -->
+        <details style="margin-top:5px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">2) 목국의 변국향법</summary>
+          <div style="padding:8px; font-size:0.6rem; color:var(--txt2);">
+            <p style="color:var(--teal-lt); margin-bottom:4px;">&lt;목국 변국향의 효험&gt;</p>
+            <ul style="padding-left:15px; line-height:1.5; margin-bottom:10px;">
+              <li>1) 묘파의 절처봉생향 [간좌곤향, 인좌신향]... 부귀하고 장수하고 인정이 흥왕한다. 차남이 먼저 발복한다.</li>
+              <li>2) 묘파의 사처봉왕향 [임좌병향, 자좌오향]... 발부발귀하고 오래 살고 인정이 흥왕한다.</li>
+              <li>3) 절파의 절처봉생향 [간좌곤향]... 대부대귀하고 인정이 흥왕한다.</li>
+              <li>4) 태파의 욕처봉왕향 [갑좌경향]... 부귀쌍전하고 인정흥왕한다.</li>
+              <li>5) 태파의 절처봉생향 [간좌곤향]... 부귀하고 복수쌍전한다.</li>
+            </ul>
+            <table border="1" cellpadding="2" style="border-collapse:collapse; width:100%; font-size:0.5rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4);">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th rowspan="2">구분</th><th rowspan="2">자연<br>흐름</th><th colspan="2">정국 향법</th><th colspan="3">변국 향법</th><th rowspan="2">비고</th>
+              </tr>
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>내룡</th><th>입향</th><th>내룡</th><th>향법</th><th>쌍산오행</th>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">묘파<br>(정미)</td>
+                <td>우선수</td><td>장생,양</td><td>정생향</td><td>장생,양</td><td>絶處逢生向</td><td>곤신향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>제왕,관</td><td>정왕향</td><td>제왕,관</td><td>死處逢旺向</td><td>병오향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td style="color:var(--teal-lt);">절파<br>(곤신)</td>
+                <td>좌선수</td><td>관대,관</td><td>정묘향</td><td>-</td><td>絶處逢生向</td><td>곤향</td><td>천간,백보<br>전란없음</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">태파<br>(경)</td>
+                <td>우선수</td><td>양룡</td><td>태향</td><td>양룡</td><td>浴處逢旺向</td><td>-</td><td>천간<br>백보전란</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>쇠,제왕</td><td>쇠향</td><td>관대,제왕</td><td>絶處逢生向</td><td>곤향</td><td>천간,평야</td>
+              </tr>
+            </table>
+          </div>
+        </details>
+
+        <!-- 화국 -->
+        <details style="margin-top:5px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">3) 화국의 변국향법</summary>
+          <div style="padding:8px; font-size:0.6rem; color:var(--txt2);">
+            <p style="color:var(--teal-lt); margin-bottom:4px;">&lt;화국 변국향의 효험&gt;</p>
+            <ul style="padding-left:15px; line-height:1.5; margin-bottom:10px;">
+              <li>1) 묘파의 절처봉생향 [손좌건향, 사좌해향]... 부귀하고 장수하고 인정이 흥왕한다. 발복이 유구히 오래 간다.</li>
+              <li>2) 묘파의 사처봉왕향 [갑좌경향, 묘좌유향]... 발부발귀하고 오래 살고 인정이 흥왕한다.</li>
+              <li>3) 절파의 절처봉생향 [손좌건향]... 대부대귀하고 인정이 흥왕한다.</li>
+              <li>4) 태파의 욕처봉왕향 [병좌임향]... 부귀쌍전하고 인정흥왕한다.</li>
+              <li>5) 태파의 절처봉생향 [손좌건향]... 부귀하고 복수쌍전한다.</li>
+            </ul>
+            <table border="1" cellpadding="2" style="border-collapse:collapse; width:100%; font-size:0.5rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4);">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th rowspan="2">구분</th><th rowspan="2">자연<br>흐름</th><th colspan="2">정국 향법</th><th colspan="3">변국 향법</th><th rowspan="2">비고</th>
+              </tr>
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>내룡</th><th>입향</th><th>내룡</th><th>향법</th><th>쌍산오행</th>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">묘파<br>(신술)</td>
+                <td>우선수</td><td>장생,양</td><td>정생향</td><td>장생,양</td><td>絶處逢生向</td><td>건해향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>제왕,관</td><td>정왕향</td><td>제왕,관</td><td>死處逢旺向</td><td>경유향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td style="color:var(--teal-lt);">절파<br>(건해)</td>
+                <td>좌선수</td><td>관대,관</td><td>정묘향</td><td>-</td><td>絶處逢生向</td><td>건향</td><td>천간,백보<br>전란없음</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">태파<br>(임)</td>
+                <td>우선수</td><td>양룡</td><td>태향</td><td>양룡</td><td>浴處逢旺向</td><td>-</td><td>천간<br>백보전란</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>쇠,제왕</td><td>쇠향</td><td>관대,제왕</td><td>絶處逢生向</td><td>건향</td><td>천간,평야</td>
+              </tr>
+            </table>
+          </div>
+        </details>
+
+        <!-- 금국 -->
+        <details style="margin-top:5px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">4) 금국의 변국향법</summary>
+          <div style="padding:8px; font-size:0.6rem; color:var(--txt2);">
+            <p style="color:var(--teal-lt); margin-bottom:4px;">&lt;금국 변국향의 효험&gt;</p>
+            <ul style="padding-left:15px; line-height:1.5; margin-bottom:10px;">
+              <li>1) 묘파의 절처봉생향 [곤좌간향, 신좌인향]... 부귀하고 장수하고 인정이 흥왕한다. 차남이 먼저 발복한다.</li>
+              <li>2) 묘파의 사처봉왕향 [병좌임향, 오좌자향]... 발부발귀하고 오래 살고 인정이 흥왕한다.</li>
+              <li>3) 절파의 절처봉생향 [곤좌간향]... 대부대귀하고 인정이 흥왕한다.</li>
+              <li>4) 태파의 욕처봉왕향 [경좌갑향]... 부귀쌍전하고 인정흥왕한다.</li>
+              <li>5) 태파의 절처봉생향 [곤좌간향]... 부귀하고 복수쌍전한다.</li>
+            </ul>
+            <table border="1" cellpadding="2" style="border-collapse:collapse; width:100%; font-size:0.5rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4);">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th rowspan="2">구분</th><th rowspan="2">자연<br>흐름</th><th colspan="2">정국 향법</th><th colspan="3">변국 향법</th><th rowspan="2">비고</th>
+              </tr>
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>내룡</th><th>입향</th><th>내룡</th><th>향법</th><th>쌍산오행</th>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">묘파<br>(계축)</td>
+                <td>우선수</td><td>장생,양</td><td>정생향</td><td>장생,양</td><td>絶處逢生向</td><td>간인향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>제왕,관</td><td>정왕향</td><td>제왕,관</td><td>死處逢旺向</td><td>임자향</td><td>천간,지지</td>
+              </tr>
+              <tr>
+                <td style="color:var(--teal-lt);">절파<br>(간인)</td>
+                <td>좌선수</td><td>관대,관</td><td>정묘향</td><td>-</td><td>絶處逢生向</td><td>간향</td><td>천간,백보<br>전란없음</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="color:var(--teal-lt);">태파<br>(갑)</td>
+                <td>우선수</td><td>양룡</td><td>태향</td><td>양룡</td><td>浴處逢旺向</td><td>-</td><td>천간<br>백보전란</td>
+              </tr>
+              <tr>
+                <td>좌선수</td><td>쇠,제왕</td><td>쇠향</td><td>관대,제왕</td><td>絶處逢生向</td><td>간향</td><td>천간,평야</td>
+              </tr>
+            </table>
+          </div>
+        </details>
+
+        <!-- 12포태 표 -->
+        <details style="margin-top:5px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">5) 12포태 / 局 종합표 (龍 & 水·向)</summary>
+          <div style="padding:8px; overflow-x:auto;">
+            <table border="1" cellpadding="2" style="border-collapse:collapse; width:100%; font-size:0.5rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4); white-space:nowrap;">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th rowspan="2">12포태</th>
+                <th colspan="2">水局</th><th colspan="2">木局</th><th colspan="2">火局</th><th colspan="2">金局</th>
+              </tr>
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>龍</th><th>水·向</th><th>龍</th><th>水·向</th><th>龍</th><th>水·向</th><th>龍</th><th>水·向</th>
+              </tr>
+              <tr><td>墓</td><td>乙辰</td><td>乙辰</td><td>丁未</td><td>丁未</td><td>辛戌</td><td>辛戌</td><td>癸丑</td><td>癸丑</td></tr>
+              <tr><td>絶</td><td>甲卯</td><td>巽巳</td><td>丙午</td><td>坤申</td><td>庚酉</td><td>乾亥</td><td>壬子</td><td>艮寅</td></tr>
+              <tr><td>胎</td><td>艮寅</td><td>丙午</td><td>巽巳</td><td>庚酉</td><td>坤申</td><td>壬子</td><td>乾亥</td><td>甲卯</td></tr>
+              <tr><td>養</td><td>癸丑</td><td>丁未</td><td>乙辰</td><td>辛戌</td><td>丁未</td><td>癸丑</td><td>辛戌</td><td>乙辰</td></tr>
+              <tr><td style="color:var(--teal-lt);">長生</td><td style="color:var(--teal-lt);">壬子</td><td style="color:var(--teal-lt);">坤申</td><td style="color:var(--teal-lt);">甲卯</td><td style="color:var(--teal-lt);">乾亥</td><td style="color:var(--teal-lt);">丙午</td><td style="color:var(--teal-lt);">艮寅</td><td style="color:var(--teal-lt);">庚酉</td><td style="color:var(--teal-lt);">巽巳</td></tr>
+              <tr><td>沐浴</td><td>乾亥</td><td>庚酉</td><td>艮寅</td><td>壬子</td><td>巽巳</td><td>甲卯</td><td>坤申</td><td>丙午</td></tr>
+              <tr><td>冠帶</td><td>辛戌</td><td>辛戌</td><td>癸丑</td><td>癸丑</td><td>乙辰</td><td>乙辰</td><td>丁未</td><td>丁未</td></tr>
+              <tr><td>臨官</td><td>庚酉</td><td>乾亥</td><td>壬子</td><td>艮寅</td><td>甲卯</td><td>巽巳</td><td>丙午</td><td>坤申</td></tr>
+              <tr><td style="color:var(--gold-lt);">帝旺</td><td style="color:var(--gold-lt);">坤申</td><td style="color:var(--gold-lt);">壬子</td><td style="color:var(--gold-lt);">乾亥</td><td style="color:var(--gold-lt);">甲卯</td><td style="color:var(--gold-lt);">艮寅</td><td style="color:var(--gold-lt);">丙午</td><td style="color:var(--gold-lt);">巽巳</td><td style="color:var(--gold-lt);">庚酉</td></tr>
+              <tr><td>衰</td><td>丁未</td><td>癸丑</td><td>辛戌</td><td>乙辰</td><td>癸丑</td><td>丁未</td><td>乙辰</td><td>辛戌</td></tr>
+              <tr><td>病</td><td>丙午</td><td>艮寅</td><td>庚酉</td><td>巽巳</td><td>壬子</td><td>坤申</td><td>甲卯</td><td>乾亥</td></tr>
+              <tr><td>死</td><td>巽巳</td><td>甲卯</td><td>坤申</td><td>丙午</td><td>乾亥</td><td>庚酉</td><td>艮寅</td><td>壬子</td></tr>
+            </table>
+          </div>
+        </details>
+      `;
+      break;
+    case 5:
+      t = "5층 천산 72룡 (穿山七十二龍)";
+      c = `
+        <p>지반정침(4층)의 24방위를 다시 3개씩(각 5도) 나누어 <strong>총 72개의 방위</strong>로 더 미세하게 쪼갠 층입니다. (60갑자 + 12공망)</p><br>
+        <p><strong>천산(穿山)</strong>이란 '산을 꿰뚫어 본다'는 의미로, 멀리서 뻗어 내려오는 거대한 용맥 속의 숨겨진 생기(生氣)를 측정합니다. 맥의 기운이 살아 꿈틀거리는 <strong>생맥(生脈)</strong>인지, 비어있는 <strong>공망(空亡)</strong>, 차가운 <strong>냉기(冷氣)</strong>, 혹은 끊어진 <strong>절맥(絶脈)</strong>인지를 세밀하게 필터링합니다.</p><br>
+        <p class="highlight">입수도두로 들어오는 1차 관문에서 불순물(흉한 기운)을 거르고 진짜 순수한 지기가 혈자리로 흐르는지를 확인하는 탐지 장치입니다.</p>
+        <br>
+        <hr style="border: 0; border-top: 1px dashed rgba(0,180,120,.5); margin: 15px 0;">
+        <p style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--gold-lt);"><strong>과협(過峽)의 지기(地氣) 판단과 천산 72룡</strong></p>
+        
+        <p style="font-size:0.65rem; color:var(--txt); line-height:1.6; margin-bottom:10px;">
+          <strong>과협이란?</strong> 산맥(용맥)이 뻗어오다 멈추어 잘록하게 허리를 형성한 곳으로, 맥을 통해 흐르는 지기의 순수성과 크기를 측정하는 구역입니다. 이곳에서 <strong>5층 천산 72룡</strong>으로 기맥을 세밀히 측정하여 그 맥이 생기맥인지 왕기맥인지를 명확히 판별합니다.
+        </p>
+
+        <div style="background:rgba(0,50,30,.3); border-left:3px solid var(--teal); padding:10px; margin-bottom:10px; border-radius:4px;">
+          <p style="color:var(--teal-lt); font-weight:bold; font-size:0.75rem; margin-bottom:5px;">生氣脈 (생기맥) : 우선수 (右旋水)</p>
+          <ul style="padding-left:15px; font-size:0.65rem; color:var(--txt2); line-height:1.6; margin:0;">
+            <li><strong style="color:var(--txt);">원리:</strong> 용맥이나 주변의 득수가 오른쪽으로 감아 돌며(시계방향, 우선) 흐르는 자연 흐름 구조입니다. 오행의 순환에서 유순하게 생동하는 진기(眞氣)를 담고 있습니다.</li>
+            <li><strong style="color:var(--txt);">효험:</strong> 만물을 싹트게 하는 부드럽고 근원적인 생명력을 품어, <strong>점진적이고 꾸준한 발복</strong>을 이끕니다. 자손이 끊임없이 이어지고 대대로 안정되며 화목한 부귀를 누리게 합니다.</li>
+          </ul>
+        </div>
+
+        <div style="background:rgba(50,20,0,.3); border-left:3px solid var(--gold-lt); padding:10px; border-radius:4px; margin-bottom:10px;">
+          <p style="color:var(--gold-lt); font-weight:bold; font-size:0.75rem; margin-bottom:5px;">旺氣脈 (왕기맥) : 좌선수 (左旋水)</p>
+          <ul style="padding-left:15px; font-size:0.65rem; color:var(--txt2); line-height:1.6; margin:0;">
+            <li><strong style="color:var(--txt);">원리:</strong> 용맥이나 주변의 득수가 왼쪽으로 힘차게 감아 돌며(반시계방향, 좌선) 뻗어오는 구조입니다. 양(陽)의 역동적이고 강건한 기운이 혈장에 거세게 응집됩니다.</li>
+            <li><strong style="color:var(--txt);">효험:</strong> 만물이 가장 왕성하게 에너지를 뿜어내는 폭발적인 기운을 나타내어 <strong>빠르고 강력한 발복</strong>을 이끕니다. 당대에 큰 부호, 영웅호걸이 나거나 특출난 권력을 쥐게 하는 막강한 에너지입니다.</li>
+          </ul>
+        </div>
+        
+        <p style="font-size:0.6rem; color:rgba(255,255,255,.6); line-height:1.5; margin-top:5px; padding-left:5px;">
+          * 요약하자면, 천산 72룡을 이용해 과협의 지기가 텅 빈 <strong>공망</strong>이나 죽은 <strong>절맥</strong>을 피하는 것은 물론, 오른쪽으로 감아 도는 <b>생기(우선수)</b> 또는 왼쪽으로 감아 도는 <b>왕기(좌선수)</b> 진맥 중 어디에 속하는지를 정밀하게 탐지하여 진혈(眞穴) 여부를 결론짓습니다.
+        </p>
+      `;
+      break;
+    case 6:
+      t = "6층 인문 사봉 (인반중침 人盤中針)";
+      c = `
+        <p><strong>인반중침(人盤中針)</strong>은 천, 지, 인 중 <span class="highlight">사람(人)과 사람을 둘러싼 주변 환경</span>을 다루는 침입니다. 지반정침(4층)보다 시계 반대 방향(서쪽)으로 <strong>반 칸(7.5도) 물러나(退)</strong> 배치되어 있습니다.</p><br>
+        <p>주된 용도는 <strong>사격(砂格 - 혈을 감싸고 있는 산봉우리, 건물, 바위 등 주변 환경)</strong>의 방위를 측정하는 것입니다.</p><br>
+        <p>나의 혈자리(묘나 집)를 중심으로 사방에 솟아오른 산봉우리가 나를 돕는 오행(생, 비화)인지, 아니면 나를 해치는 오행(극, 설기)인지를 판명하여 어느 쪽 사봉이 발복에 이로운지를 판단합니다.</p>
+        <br>
+        <hr style="border: 0; border-top: 1px dashed rgba(0,180,120,.5); margin: 15px 0;">
+        
+        <p style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--teal-lt);"><strong>1) 三吉六秀 (3길 6수)의 원리와 설명</strong></p>
+        
+        <div style="background:rgba(0,50,30,.3); border-left:3px solid var(--gold-lt); padding:10px; margin-bottom:10px; border-radius:4px;">
+          <p style="color:var(--gold-lt); font-weight:bold; font-size:0.75rem; margin-bottom:5px;">三吉 (3길) : 가장 길성(吉星)이 비추는 핵심 방위</p>
+          <ul style="padding-left:15px; font-size:0.65rem; color:var(--txt); line-height:1.6; margin:0;">
+            <li><strong style="color:var(--teal-lt);">대상 방위:</strong> <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">해(亥)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">진(震=卯)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">경(庚)</span></li>
+            <li><strong style="color:var(--txt2);">원리:</strong> 탐낭(貪狼), 거문(巨門), 무곡(武曲) 등 천상의 으뜸가는 별 기운이 땅으로 내려와 맺히는 삼대(三大) 길방입니다.</li>
+            <li><strong style="color:var(--txt2);">설명:</strong> 이 세 방향에서 모양이 둥글고 단정하거나(금성), 붓끝처럼 빼어난(목성) 수려한 산봉우리가 나를 향해 인사하듯 읍례(揖禮)하면, 대통령을 비롯한 <strong>국가 거물급 인사나 대부호, 뛰어난 문장가</strong>가 배출된다고 평가합니다. 반대로 이 방향의 산이 무너지거나 뾰족한 암석이 흉하게 자신을 찌르듯 솟아있으면 살기로 변하여 흉악한 일을 겪습니다.</li>
+          </ul>
+        </div>
+
+        <div style="background:rgba(50,50,50,.3); border-left:3px solid var(--teal); padding:10px; border-radius:4px; margin-bottom:15px;">
+          <p style="color:var(--teal-lt); font-weight:bold; font-size:0.75rem; margin-bottom:5px;">六秀 (6수) : 3길 다음으로 기운이 수려한 방위</p>
+          <ul style="padding-left:15px; font-size:0.65rem; color:var(--txt); line-height:1.6; margin:0;">
+            <li><strong style="color:var(--teal-lt);">대상 방위:</strong> <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">간(艮)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">병(丙)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">손(巽)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">신(辛)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">태(兑=酉)</span>, <span style="background:rgba(255,255,255,.1); padding:1px 4px; border-radius:3px;">정(丁)</span></li>
+            <li><strong style="color:var(--txt2);">설명:</strong> 아름답고 빼어난 기운을 품은 6방위입니다. 이 방향에 잘생긴 능선이나 사봉이 솟아 있으면 <strong>훌륭한 학자, 문장가, 예술인, 부귀한 귀인</strong>이 나오는 명당으로 봅니다. (3길 방위와 합쳐 <strong>최고 명당 9방위</strong>를 이룹니다.)</li>
+          </ul>
+        </div>
+
+        <p style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--teal-lt);"><strong>2) 24방위 砂峰(사봉) 인물/직업 형상 판단표</strong></p>
+        <p style="font-size:0.6rem; color:var(--txt2); line-height:1.5; margin-bottom:10px; text-align:center;">
+          각 방위에 수려한 산봉우리가 솟아있을 때,<br>해당 방위의 천성(별 기운)에 영향을 받아 배출되는 인물상입니다.
+        </p>
+
+        <details style="margin-top:5px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem; text-align:center;">
+            👇 24방위 인물 및 직업 상세표 보기 (클릭)
+          </summary>
+          <div style="padding:8px; overflow-x:auto;">
+            <table border="1" cellpadding="3" style="border-collapse:collapse; width:100%; font-size:0.55rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4); white-space:nowrap;">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>방위</th><th>구분</th><th>천성</th><th>주요 인물/직업상</th>
+                <th>방위</th><th>구분</th><th>천성</th><th>주요 인물/직업상</th>
+              </tr>
+              <tr><td style="color:var(--gold-lt); font-weight:bold;">亥 (해)</td><td style="color:var(--gold-lt);">三吉</td><td>천황</td><td>대통령, 국가원수</td>      <td>巳 (사)</td><td>-</td><td>권병</td><td>고위 공무원, 관리</td></tr>
+              <tr><td>壬 (임)</td><td>-</td><td>천보</td><td>비서실장 (공직)</td>     <td style="color:var(--teal-lt);">丙 (병)</td><td style="color:var(--teal-lt);">六秀</td><td>태미</td><td>과학자, 전문 학자</td></tr>
+              <tr><td>子 (자)</td><td>-</td><td>천루</td><td>비서실장 (공직)</td>     <td>午 (오)</td><td>-</td><td>남극</td><td>기능술사, 전문기술인</td></tr>
+              <tr><td>癸 (계)</td><td>-</td><td>천도</td><td>의사, 지도자</td>       <td style="color:var(--teal-lt);">丁 (정)</td><td style="color:var(--teal-lt);">六秀</td><td>천상</td><td>의식/음식업, 재력가</td></tr>
+              <tr><td>丑 (축)</td><td>-</td><td>천수</td><td>음식업, 종교계</td>     <td>未 (미)</td><td>-</td><td>천월</td><td>성공한 기업인, 사업가</td></tr>
+              <tr><td style="color:var(--teal-lt);">艮 (간)</td><td style="color:var(--teal-lt);">六秀</td><td>천시</td><td>큰 사업가, 상업 거상</td><td>坤 (곤)</td><td>-</td><td>천마</td><td>물류운수 사업가</td></tr>
+              <tr><td>寅 (인)</td><td>-</td><td>천방</td><td>대지주, 선주</td>       <td>申 (신)</td><td>-</td><td>천관</td><td>공직자, 행정 관료</td></tr>
+              <tr><td>甲 (갑)</td><td>-</td><td>권원</td><td>대지주, 농림/정원</td> <td style="color:var(--gold-lt); font-weight:bold;">庚 (경)</td><td style="color:var(--gold-lt);">三吉</td><td>천한</td><td>고위 공직자, 장검/군인</td></tr>
+              <tr><td style="color:var(--gold-lt); font-weight:bold;">卯 (묘=震)</td><td style="color:var(--gold-lt);">三吉</td><td>천명</td><td>명망 높은 의사</td>    <td style="color:var(--teal-lt);">酉 (유=兌)</td><td style="color:var(--teal-lt);">六秀</td><td>소미</td><td>문학, 훌륭한 예술인</td></tr>
+              <tr><td>乙 (을)</td><td>-</td><td>권강</td><td>공작/설계 전문가</td>  <td style="color:var(--teal-lt);">辛 (신)</td><td style="color:var(--teal-lt);">六秀</td><td>천을</td><td>남성 공직자, 실무가</td></tr>
+              <tr><td>辰 (진)</td><td>-</td><td>천강</td><td>군인, 경찰, 사법계</td> <td>戌 (술)</td><td>-</td><td>천괴</td><td>경찰, 치안/보안 유지</td></tr>
+              <tr><td style="color:var(--teal-lt);">巽 (손)</td><td style="color:var(--teal-lt);">六秀</td><td>태을</td><td>여성 공직자, 귀부인</td> <td>乾 (건)</td><td>-</td><td>천구</td><td>문장가, 지식 학자</td></tr>
+            </table>
+          </div>
+        </details>
+      `;
+      break;
+    case 7:
+      t = "7층 투지 60룡 (透地六十龍)";
+      c = `
+        <p>혈 기운이 최종적으로 맺히는 바로 뒤(입수도두 승소)에서 측정하는 <strong>60갑자</strong> 방위입니다.</p><br>
+        <p><strong>투지(透地)</strong>란 '땅속으로 투과하여 진기를 잡아낸다'는 뜻으로, 천산72룡이 산맥 전체의 흐름을 보았다면 투지60룡은 관(시신)이 묻히는 <strong>혈 바로 코앞의 에너지를 돋보기로 들여다보듯 조율</strong>하는 단계입니다.</p><br>
+        <p class="highlight">용맥의 기운이 삐뚤어지지 않고 똑바로 시신에 주입될 수 있도록 순수한 '정기(正氣)'를 분별해내고, 기맥에 맞춰 관을 안치할 중심축을 잡습니다.</p>
+        <br>
+        <hr style="border: 0; border-top: 1px dashed rgba(0,180,120,.5); margin: 15px 0;">
+        
+        <p style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--gold-lt);"><strong>혈의 정중(正中) 판단과 자연의 흐름</strong></p>
+        
+        <p style="font-size:0.65rem; color:var(--txt); line-height:1.6; margin-bottom:12px;">
+          <strong>혈장 내에서 혈의 정중 판단 (내룡 중심선 : 복부의 중심 : 배꼽):</strong><br>
+          어머니의 복부 중심에 태아가 자라듯, 기운이 모이는 넓은 혈장(穴場) 내에서 기맥이 1밀리미터의 오차도 없이 가장 밀도 있게 응축된 <strong>내룡의 중심선(혈심=배꼽)</strong>을 7층 투지 60룡을 통해 찾아냅니다. 이는 시신이나 건축물을 안치할 가장 정확한 코어(Core)를 가늠하는 핵심 작업입니다.
+        </p>
+
+        <p style="font-size:0.65rem; color:var(--teal-lt); font-weight:bold; margin-bottom:5px;">[혈심의 생기맥/왕기맥 판단]</p>
+        <div style="background:rgba(255,255,255,.05); border:1px solid rgba(0,180,120,.2); padding:10px; border-radius:4px; margin-bottom:12px;">
+          <ul style="padding-left:12px; font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0; list-style-type:circle;">
+            <li style="margin-bottom:6px;"><strong style="color:var(--teal-lt);">生氣脈 (생기맥) - 우선수:</strong> 혈장으로 진입하는 기맥과 이를 둘러싼 자연(바람/물)의 흐름이 오른쪽(시계방향)으로 부드럽게 감싸 도는 형태입니다. 유순한 생명력을 지속적으로 공급받아 <strong>후손이 끊이지 않는 점진적 발복</strong>을 나타냅니다.</li>
+            <li><strong style="color:var(--gold-lt);">旺氣脈 (왕기맥) - 좌선수:</strong> 기맥과 지기가 왼쪽(반시계방향)으로 힘차게 회전하며 혈심으로 강하게 돌진하는 형태입니다. 역동적인 양의 에너지가 정중에 폭발적으로 결집되어 <strong>당대의 거세고 빠른 발복</strong>을 이끕니다.</li>
+          </ul>
+        </div>
+
+        <div style="background:rgba(0,10,5,.5); border-left:3px solid var(--gold-dk); padding:10px; border-radius:4px; margin-bottom:10px;">
+          <p style="color:var(--txt); font-weight:bold; font-size:0.65rem; margin-bottom:5px;">자연의 흐름과 혈의 중심 (설명과 원리)</p>
+          <p style="font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0;">
+            풍수에서 지기(땅의 기운)는 일직선으로 쏘아지지 않고, 주변 수세(水勢)와 지세에 순응하며 <strong>태극(太極)이나 뱀처럼 S자 곡선(우선/좌선)</strong>을 그리며 들어옵니다. 진정한 명당의 혈(穴)은 이 거대한 기류가 그리는 소용돌이의 완벽한 <strong>회전 정점(중심축)</strong>에 위치합니다.<br><br>
+            투지 60룡 패철은 이처럼 자연이 그려내는 나선형의 흐름을 읽어내어, 관(시신)이 자연 에너지망의 중심에 정확하게 일치하도록 1도 단위로 각도를 맞춥니다. 이 중심축을 빗겨가면 자연의 흐름에 역행하여 생기를 온전히 머금지 못하게 됩니다.
+          </p>
+        </div>
+      `;
+      break;
+    case 8:
+      t = "8층 천반봉침 (天盤縫針) : 득수, 파, 향";
+      c = `
+        <p><strong>천반봉침(天盤縫針)</strong>은 천, 지, 인 중 <span class="highlight">하늘(天), 즉 움직이는 양(陽)의 기운을 다루는 침</span>입니다. 지반정침(4층)보다 시계 방향(동쪽)으로 <strong>반 칸(7.5도) 앞서(進)</strong> 배치되어 있습니다.</p><br>
+        <p>양의 성질을 가진 <strong>물(水)의 흐름(득수와 파구)</strong>, 그리고 빛을 측정하는 데 사용됩니다. 풍수에서 "산(용)은 지반정침으로 재고, 물은 천반봉침으로 잰다"고 하는 이유입니다.</p><br>
+        <p>물이 어디서 들어와(得水) 어디로 빠져나가는지(破口)를 이 8층으로 측정하면 <strong>3합오행 局(국)</strong>이 결정되며, 그 수법(12포태법)의 길흉에 완벽히 합치되도록 시신의 머리 방향, 즉 <strong>향(向)</strong>을 정합니다.</p>
+        <br>
+        <hr style="border: 0; border-top: 1px dashed rgba(0,180,120,.5); margin: 15px 0;">
+        
+        <p style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--teal-lt);"><strong>88향법 (八十八向法) - 입향과 수구의 결정</strong></p>
+        <p style="font-size:0.6rem; color:var(--txt); line-height:1.6; margin-bottom:10px;">
+          <strong>88향법이란?</strong> 득수(물 들어옴)와 파구(물 나감), 그리고 내룡(산맥)의 기운이 우선수(우회전)인지 좌선수(좌회전)인지에 따라 가장 완벽한 <strong>입향(立向. 묘나 집의 방향)</strong>을 결정하는 88가지의 정밀한 방법론입니다. 물이 빠져나가는 수구(水口)의 위치에 따라 크게 <strong>묘파(墓破), 절파(絶破), 태파(胎破)</strong> 등으로 나뉩니다.
+        </p>
+
+        <details style="margin-bottom:10px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;" open>
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">
+            👇 1) 墓破 (묘파 - 4국) 펼치기
+          </summary>
+          <div style="padding:10px; background:rgba(0,10,5,.3);">
+            <ul style="padding-left:15px; font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0; list-style-type:circle;">
+              <li style="margin-bottom:5px;">
+                <strong style="color:var(--teal-lt);">[우선수]</strong> 眞龍(장생룡, 쇠룡) ➔ 定穴 ➔ <strong>正生向(정생향)</strong> ➔ (6가지 제약) ➔ <strong>自生向(자생향 / 절처봉생향)</strong><br>
+                <span style="color:rgba(255,255,255,.5); font-size:0.55rem;">* 조건: 天干/地支 (천간 혹은 지지 파구)</span>
+              </li>
+              <li>
+                <strong style="color:var(--gold-lt);">[좌선수]</strong> 眞龍(제왕룡, 임관룡) ➔ 定穴 ➔ <strong>正旺向(정왕향)</strong> ➔ (6가지 제약) ➔ <strong>自旺向(자왕향 / 사처봉왕향)</strong><br>
+                <span style="color:rgba(255,255,255,.5); font-size:0.55rem;">* 조건: 天干/地支 (천간 혹은 지지 파구)</span>
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <details style="margin-bottom:10px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">
+            👇 2) 絶破 (절파 - 4국) 펼치기
+          </summary>
+          <div style="padding:10px; background:rgba(0,10,5,.3);">
+            <ul style="padding-left:15px; font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0; list-style-type:circle;">
+              <li style="margin-bottom:5px;">
+                <strong style="color:var(--teal-lt);">[우선수]</strong> 眞龍(장생룡, 쇠룡) ➔ 定穴 ➔ <strong>正養向(정양향)</strong> ➔ (6가지 제약) ➔ <strong>自生向(자생향 / 절처봉생향)</strong><br>
+                <span style="color:rgba(255,150,150,.8); font-size:0.55rem;">* 특수 제약조건: ① 天干破(천간파) ② 백보전란(百步轉欄) ③ 용진혈적(龍眞穴的)</span>
+              </li>
+              <li>
+                <strong style="color:var(--gold-lt);">[좌선수]</strong> 眞龍(제왕룡, 임관룡) ➔ 定穴 ➔ <strong>正墓向(정묘향)</strong> ➔ (6가지 제약) ➔ <strong style="color:red;">立向 不可 (입향 불가)</strong><br>
+                <span style="color:rgba(255,255,255,.5); font-size:0.55rem;">* 조건: 天干/地支 (합당한 향을 놓을 수 없어 피해야 함)</span>
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <details style="border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">
+            👇 3) 胎破 (태파 - 4국) 펼치기
+          </summary>
+          <div style="padding:10px; background:rgba(0,10,5,.3);">
+            <ul style="padding-left:15px; font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0; list-style-type:circle;">
+              <li style="margin-bottom:5px;">
+                <strong style="color:var(--teal-lt);">[우선수]</strong> 眞龍(양룡) ➔ 定穴 ➔ <strong>胎向(태향)</strong> ➔ (6가지 제약) ➔ <strong>自旺向(자왕향 / 욕처봉왕향)</strong><br>
+                <span style="color:rgba(255,150,150,.8); font-size:0.55rem;">* 특수 제약조건: ① 天干破(천간파) ② 백보전란(百步轉欄) ③ 용진혈적(龍眞穴的)</span>
+              </li>
+              <li>
+                <strong style="color:var(--gold-lt);">[좌선수]</strong> 眞龍(관대룡, 임관룡 - *제왕/쇠룡) ➔ 定穴 ➔ <strong>衰向(쇠향)</strong> ➔ (6가지 제약) ➔ <strong>自生向(자생향 / 절처봉생향)</strong><br>
+                <span style="color:rgba(255,150,150,.8); font-size:0.55rem;">* 특수 제약조건: ① 天干破(천간파) ② 평야(平野) ③ 전고후저(前高後低)</span>
+              </li>
+            </ul>
+          </div>
+        </details>
+        
+        <p style="font-size:0.6rem; color:rgba(255,255,255,.6); line-height:1.5; margin-top:10px; padding-left:5px;">
+          * <strong>원리:</strong> 천반봉침(8층)을 통해 도출하는 88향법은 내룡의 속성과 물의 흐름(우선/좌선)이 포태법상 길방(생, 왕, 양)으로 흐르게 유도하고, 물이 빠져나가는 곳(수구/파구)은 흉방(묘, 절, 태)으로 보내어 사악한 기운을 억누르는 복합적인 풍수 설계 공식입니다. 위 표의 세부 조건(천간파, 백보전란 등)에 맞지 않으면 진혈이라도 발복이 지연되거나 오히려 악화될 수 있어 엄격히 지킵니다.
+        </p>
+        
+        <br>
+        <p style="text-align:center; margin:5px 0 10px; font-size:0.85rem; color:var(--teal-lt);"><strong>4국(四局) 삼합의 파·용·향 결정 원리 상세</strong></p>
+        <p style="font-size:0.6rem; color:var(--txt2); line-height:1.6; margin-bottom:10px;">
+          금, 수, 목, 화 4국의 삼합(三合) 오행에 따라, 물의 회전 방향(우선수/좌선수)이 내룡(산맥)과 입향(방향), 수구(물이 나가는 곳)와 어떻게 정석적으로 연결되는지를 보여주는 핵심 도식입니다. (가장 이상적인 <strong>묘파(墓破)</strong>의 정생향/정왕향 기준)
+        </p>
+
+        <details style="margin-bottom:10px; border:1px solid rgba(0,180,120,.3); border-radius:4px; padding:0;">
+          <summary style="padding:6px; background:rgba(0,50,30,.4); cursor:pointer; font-weight:bold; color:var(--gold-lt); font-size:0.65rem;">
+            👇 4국(금,수,목,화) 삼합 원본 구조도 및 조합표 보기 (클릭)
+          </summary>
+          <div style="padding:10px; background:rgba(0,10,5,.3);">
+            <div style="text-align:center; margin-bottom:15px;">
+              ${drawSamhapSvg('금')}
+            </div>
+            
+            <div style="text-align:center; margin-bottom:15px;">
+              ${drawSamhapSvg('수')}
+              ${drawSamhapSvg('목')}
+              ${drawSamhapSvg('화')}
+            </div>
+
+            <table border="1" cellpadding="3" style="border-collapse:collapse; width:100%; font-size:0.55rem; text-align:center; color:var(--txt); border-color:rgba(0,180,120,.4); white-space:nowrap;">
+              <tr style="background:rgba(0,180,120,.2); color:var(--gold-lt);">
+                <th>국(局) 오행</th><th>흐름(旋)</th><th>내룡(龍)</th><th>입향(向)</th><th>파구(破)</th>
+              </tr>
+              <tr><td rowspan="2" style="font-weight:bold; color:var(--teal-lt);">금국 (金局)<br><span style="font-size:0.45rem; color:var(--txt2);">사유축(巳酉丑)</span></td><td style="color:var(--gold-lt);">우선수</td><td>경유룡(庚酉) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>손사향(巽巳) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>계축파(癸丑) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td style="color:var(--teal-lt);">좌선수</td><td>손사룡(巽巳) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>경유향(庚酉) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>계축파(癸丑) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td rowspan="2" style="font-weight:bold; color:var(--teal-lt);">수국 (水局)<br><span style="font-size:0.45rem; color:var(--txt2);">신자진(申子辰)</span></td><td style="color:var(--gold-lt);">우선수</td><td>임자룡(壬子) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>곤신향(坤申) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>을진파(乙辰) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td style="color:var(--teal-lt);">좌선수</td><td>곤신룡(坤申) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>임자향(壬子) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>을진파(乙辰) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td rowspan="2" style="font-weight:bold; color:var(--teal-lt);">목국 (木局)<br><span style="font-size:0.45rem; color:var(--txt2);">해묘미(亥卯未)</span></td><td style="color:var(--gold-lt);">우선수</td><td>갑묘룡(甲卯) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>건해향(乾亥) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>정미파(丁未) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td style="color:var(--teal-lt);">좌선수</td><td>건해룡(乾亥) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>갑묘향(甲卯) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>정미파(丁未) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td rowspan="2" style="font-weight:bold; color:var(--teal-lt);">화국 (火局)<br><span style="font-size:0.45rem; color:var(--txt2);">인오술(寅午戌)</span></td><td style="color:var(--gold-lt);">우선수</td><td>병오룡(丙午) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>간인향(艮寅) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>신술파(辛戌) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+              <tr><td style="color:var(--teal-lt);">좌선수</td><td>간인룡(艮寅) <span style="font-size:0.45rem;color:#aaa;">[생]</span></td><td>병오향(丙午) <span style="font-size:0.45rem;color:#aaa;">[왕]</span></td><td>신술파(辛戌) <span style="font-size:0.45rem;color:#aaa;">[묘]</span></td></tr>
+            </table>
+            <ul style="padding-left:15px; font-size:0.6rem; color:var(--txt2); line-height:1.6; margin-top:10px;">
+              <li><strong style="color:var(--teal-lt);">우선수(오른쪽 회전):</strong> 용맥이 <strong>왕(旺)</strong>한 방위에서 들어올 때, <strong>생(生)</strong>의 방향으로 입향하고, 물은 오른쪽으로 감아돌아 궁극적으로 <strong>묘(墓)</strong>방위로 빠져나갑니다.</li>
+              <li><strong style="color:var(--gold-lt);">좌선수(왼쪽 회전):</strong> 용맥이 <strong>생(生)</strong>의 방위에서 뻗어올 때, <strong>왕(旺)</strong>의 방향으로 입향하고, 물은 왼쪽으로 감아돌아 <strong>묘(墓)</strong>방위로 빠져나갑니다.</li>
+            </ul>
+          </div>
+        </details>
+      `;
+      break;
+    case 9:
+      t = "9층 봉침분금 (120분금 百二十分金)";
+      c = `
+        <p>패철의 가장 바깥 테두리이며 24산을 각각 5개씩 쪼개어 <span class="highlight">총 120개의 눈금을 가진 가장 정밀한 각도기(3도 간격)</span>입니다.</p><br>
+        <p><strong>분금(分金)</strong>이란 '금을 나눈다', 즉 황금처럼 귀한 각도를 쪼개어 쓴다는 뜻입니다. 무덤 안 하관(시신을 안치) 시, 단순히 남향/동향을 맞추는 데 그치지 않고, 그 안에서도 고과공망(孤寡空亡 - 외롭고 흉한 기운의 각도)을 절묘하게 피하고 <strong>왕상풍비(旺相豊肥)한 생기의 각도로 관(棺)을 2~3도 미세하게 트는 마지막 튜닝 작업</strong>입니다.</p><br>
+        <p>육십갑자의 납음오행을 따져 망자(고인)의 생년월일과 상생(相生)하는 각도를 선택하는 최고 난이도의 맞춤형 풍수 비기입니다.</p>
+
+        <br>
+        <hr style="border: 0; border-top: 1px dashed rgba(0,180,120,.5); margin: 15px 0;">
+        <p style="text-align:center; margin-bottom:10px; font-size:0.85rem; color:var(--teal-lt);"><strong>영록(迎祿)과 차록(借祿)의 원리</strong></p>
+        <p style="font-size:0.65rem; color:var(--txt); line-height:1.6; margin-bottom:12px;">
+          120분금을 적용할 때, 24방위 하나를 5칸으로 나누면 천간(갑을/병정/무기/경신/임계)이 배속됩니다. 풍수에서는 이 중 <strong>왕상풍비(旺相豊肥)</strong>한 <strong>병정(丙丁)</strong>과 <strong>경신(庚辛)</strong> 방위만을 길(吉)한 것으로 보아 하관의 기준으로 취하는데, 이를 <strong>영록(迎祿)</strong>과 <strong>차록(借祿)</strong>이라 부릅니다.
+        </p>
+        <div style="background:rgba(255,255,255,.05); border:1px solid rgba(0,180,120,.2); padding:10px; border-radius:4px; margin-bottom:12px;">
+          <ul style="padding-left:12px; font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0; list-style-type:circle;">
+            <li style="margin-bottom:6px;"><strong style="color:var(--teal-lt);">영록 (迎祿 - 맞이할 영, 복 록):</strong> 정면으로 들어오는 본연의 왕(旺)한 기운(정록)을 당당히 맞이하여 취하는 선(線)입니다. 강력하고 온전한 생기를 그대로 받아들여 <strong>빠르고 강한 발복</strong>을 가져옵니다. 주로 120분금 중 <strong>'병(丙), 정(丁)'</strong>의 분금이 이에 해당합니다.</li>
+            <li><strong style="color:var(--gold-lt);">차록 (借祿 - 빌릴 차, 복 록):</strong> 자신이 취할 기운이 마땅치 않거나 너무 거셀 때, 각도를 살짝 비틀어 이웃한 상생(相生)의 우호적인 기운을 '빌려와서(借)' 사용하는 수법입니다. 측면의 부드러운 기운을 차용해 <strong>지속적이고 안정적인 발복</strong>을 꾀합니다. 주로 120분금 중 <strong>'경(庚), 신(辛)'</strong>의 분금이 이에 해당합니다.</li>
+          </ul>
+        </div>
+        <div style="background:rgba(0,10,5,.5); border-left:3px solid var(--gold-dk); padding:10px; border-radius:4px; margin-bottom:10px;">
+          <p style="color:var(--txt); font-weight:bold; font-size:0.65rem; margin-bottom:5px;">자연의 이치와 최종 튜닝 (설명과 원리)</p>
+          <p style="font-size:0.6rem; color:var(--txt2); line-height:1.6; margin:0;">
+            기맥이 들어오는 방향이라도 일직선상의 중심선은 너무 기운이 세거나 빈 공간(고허, 칠살)일 수 있습니다. 마치 정면으로 강하게 쪼이는 햇빛을 피하고 살짝 비스듬히 앉아 따스한 볕을 쬐 듯, 분금 패철을 활용해 관의 방향을 3도 가량 좌우로 미세하게 틀어 가장 편안하고 생기가 배어 있는 영록/차록 선상에 망자를 모시는 것이 진정한 명당 조율의 완성입니다.
+          </p>
+        </div>
+      `;
+      break;
+
+  }
+
+  title.textContent = t;
+  content.innerHTML = c;
+  
+  document.getElementById('modal-bg').style.display = 'block';
+  document.getElementById('info-modal').style.display = 'block';
+}
+
+function closePopup() {
+  document.getElementById('modal-bg').style.display = 'none';
+  document.getElementById('info-modal').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════
+   ZOOM & PAN LOGIC
+═══════════════════════════════════════════════════ */
+let zScale = 1;
+let pX = 0, pY = 0;
+let isPan = false, sX = 0, sY = 0;
+
+function updateTransform() {
+  const svg = document.getElementById('cmp-svg');
+  if(svg) svg.style.transform = `translate(${pX}px, ${pY}px) scale(${zScale})`;
+}
+
+function zoomCmp(delta) {
+  zScale += delta;
+  zScale = Math.min(Math.max(0.4, zScale), 5); // Limit zoom 0.4x to 5x
+  updateTransform();
+}
+
+function resetZoom() {
+  zScale = 1; pX = 0; pY = 0;
+  updateTransform();
+}
+
+function initZoomPan() {
+  const svg = document.getElementById('cmp-svg');
+  const container = document.getElementById('cmp-container');
+  if(!svg || !container) return;
+
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomCmp(e.deltaY < 0 ? 0.1 : -0.1);
+  }, {passive: false});
+
+  svg.addEventListener('mousedown', (e) => {
+    isPan = true;
+    sX = e.clientX - pX;
+    sY = e.clientY - pY;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if(!isPan) return;
+    pX = e.clientX - sX;
+    pY = e.clientY - sY;
+    updateTransform();
+  });
+  window.addEventListener('mouseup', () => { isPan = false; });
+  window.addEventListener('mouseleave', () => { isPan = false; });
+  
+  // Touch support
+  let tX = 0, tY = 0, initDist = 0;
+  svg.addEventListener('touchstart', (e) => {
+    if(e.touches.length === 1) {
+      isPan = true;
+      sX = e.touches[0].clientX - pX;
+      sY = e.touches[0].clientY - pY;
+    } else if (e.touches.length === 2) {
+      isPan = false;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initDist = Math.hypot(dx, dy);
+    }
+  }, {passive: false});
+  window.addEventListener('touchmove', (e) => {
+    if(isPan && e.touches.length === 1) {
+      e.preventDefault();
+      pX = e.touches[0].clientX - sX;
+      pY = e.touches[0].clientY - sY;
+      updateTransform();
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      if (initDist > 0) {
+        zoomCmp((dist - initDist) * 0.005);
+        initDist = Math.hypot(dx, dy);
+      }
+    }
+  }, {passive: false});
+  window.addEventListener('touchend', () => { isPan = false; initDist = 0; });
+}
+
+function toggleYangtaekInputs() {
+  const type = document.getElementById('sel-site-type').value;
+  const target = document.getElementById('yangtaek-inputs');
+  if(target) target.style.display = (type==='yang') ? 'flex' : 'none';
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  populateSelects();
+  
+  // Populate Gate/Master/Kitchen selects
+  const gSel = document.getElementById('sel-gate');
+  const mSel = document.getElementById('sel-master');
+  const kSel = document.getElementById('sel-kitchen');
+  const pal8 = ['乾','坤','艮','兌','坎','離','震','巽'];
+  pal8.forEach(p => {
+    const optG = document.createElement('option'); optG.value=p; optG.textContent=p;
+    const optM = document.createElement('option'); optM.value=p; optM.textContent=p;
+    const optK = document.createElement('option'); optK.value=p; optK.textContent=p;
+    gSel.appendChild(optG); mSel.appendChild(optM); kSel.appendChild(optK);
+  });
+  toggleYangtaekInputs();
+
+  updateLocation();
+  buildDial(0);
+  buildCompass();
+  buildTerrain(false);
+  calcMyunggung();
+  initZoomPan();
+
+  // Set default Taik-il date to today
+  const td = document.getElementById('taikil-date');
+  if(td) td.value = new Date().toISOString().split('T')[0];
+
+  // Set default water flow as requested: None (없음)
+  const shuiSel = document.getElementById('sel-shui');
+  const paguSel = document.getElementById('sel-pagu');
+  if (shuiSel && paguSel) {
+    shuiSel.value = ''; 
+    onShuiChange();
+    paguSel.value = ''; 
+    onPaguChange();
+  }
+
+  // scan-grp style
+  const style=document.createElement('style');
+  style.textContent=`
+    @keyframes scan-rotate{
+      0%{transform:rotate(0deg);transform-origin:150px 150px}
+      100%{transform:rotate(360deg);transform-origin:150px 150px}
+    }
+    #scan-grp{transform-origin:150px 150px}
+  `;
+  document.head.appendChild(style);
+});
+</script>
+</body>
+</html>
