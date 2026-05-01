@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 /* ───────────────────────── RESET ───────────────────────── */
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --teal:#00c9a7; --teal-lt:#44ffdb; --teal-dk:#007a63;
   --gold:#c8a93e; --gold-lt:#f0d060; --gold-dk:#7a6010;
@@ -103,7 +103,7 @@ body{font-family:'Noto Sans KR',sans-serif;color:var(--txt);background:#050f0a}
   text-shadow:0 0 12px rgba(0,200,160,.6);
 }
 .panel-hdr.gold{color:var(--gold-lt);text-shadow:0 0 12px rgba(240,208,96,.5)}
-.panel-body{flex:1;overflow-y:auto;padding:8px;min-height:0}
+.panel-body{flex:1;overflow-y:auto;padding:8px;min-height:0;-webkit-overflow-scrolling:touch}
 .panel-body::-webkit-scrollbar{width:2px}
 .panel-body::-webkit-scrollbar-thumb{background:var(--teal-dk);border-radius:2px}
 
@@ -410,6 +410,207 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
 .modal-body { font-size:0.75rem; line-height:1.6; color:var(--txt); max-height:60vh; overflow-y:auto; }
 .modal-body strong { color:var(--teal-lt); }
 .modal-body .highlight { color:var(--gold); }
+/* ─── MOBILE TABS ─── */
+.mobile-tabs {
+  display: none;
+  background: rgba(2, 10, 7, 0.95);
+  border: 1px solid var(--pb);
+  border-radius: 4px;
+  padding: 4px;
+  gap: 4px;
+  margin/* ════════════════════════════════════════════════════════════
+   📱 핸드폰용 UI/UX (Mobile: ~767px) - 사주8 스타일
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  html, body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 100vw !important;
+  }
+  .dashboard {
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 100vw !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    padding: 0;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+  .dash-hdr {
+    padding: 12px 16px;
+    flex-shrink: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+  .dh-main {
+    font-size: 1.15rem;
+  }
+  .dash-body {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    height: calc(100% - 55px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    width: 100% !important;
+    padding: 16px 14px 40px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .dash-body .panel {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 12px !important;
+    background: rgba(2, 20, 15, 0.82) !important;
+    border: 1px solid rgba(240, 208, 96, 0.25) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+    margin-bottom: 12px !important;
+    overflow: hidden !important;
+  }
+  .dash-body .panel#panel-engine {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .panel-body {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 16px 14px;
+  }
+  .center-body {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* UX Optimization for Touch */
+  .panel-hdr {
+    padding: 12px;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+  }
+  .sec-title {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  select.sel, .wsel {
+    padding: 12px 32px 12px 12px;
+    font-size: 0.9rem;
+  }
+  .date-in {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  .sim-btn {
+    padding: 16px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+  }
+  #cmp-svg {
+    width: min(320px, 92%);
+    height: min(320px, 92%);
+    margin: 10px auto;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   平板 태블릿용 UI/UX (Tablet: 768px ~ 1024px)
+   ════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1024px) {
+  html, body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    width: 100vw !important;
+  }
+  .dashboard {
+    height: 100vh !important;
+    width: 100vw !important;
+    padding: 10px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .dash-body {
+    display: grid !important;
+    grid-template-columns: 310px 1fr !important;
+    grid-template-rows: auto 1fr !important;
+    gap: 12px !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #panel-input {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    height: auto !important;
+  }
+  #panel-output {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    height: auto !important;
+  }
+  #panel-engine {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    height: 100% !important;
+    min-height: 500px !important;
+  }
+  .panel-body {
+    overflow-y: auto !important;
+    flex: 1 !important;
+  }
+  #cmp-svg {
+    width: min(460px, 90%);
+    height: min(460px, 90%);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   💻 노트북/데스크톱용 UI/UX (Laptop/PC: 1025px ~)
+   ════════════════════════════════════════════════════════════ */
+@media (min-width: 1025px) {
+  .dashboard {
+    height: 100vh;
+    width: 100vw;
+  }
+  .dash-body {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 8px;
+  }
+}sults Adjustments */
+  #analysis-result {
+    font-size: 0.85rem;
+    line-height: 1.65;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  #log-area {
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .gh-grid {
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .gh-item {
+    padding: 14px 8px;
+  }
+  .gh-icon {
+    font-size: 1.5rem;
+  }
+  .gh-txt {
+    font-size: 0.8rem;
+  }
+}
 </style>
 </head>
 <body>
@@ -449,11 +650,13 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
     </div>
   </header>
 
+
+
   <!-- ─── BODY ─── -->
   <div class="dash-body">
 
     <!-- ════ LEFT: DATA INPUT ════ -->
-    <div class="panel">
+    <div class="panel active" id="panel-input">
       <div class="panel-hdr">DATA INPUT</div>
       <div class="panel-body">
 
@@ -548,7 +751,7 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
 
       <!-- SIM BUTTON -->
       <div class="sim-wrap">
-        <button class="sim-btn" id="sim-btn" onclick="runSimulation()">
+        <button class="sim-btn" id="sim-btn" onclick="runSimulation(); document.getElementById('panel-output')?.scrollIntoView({ behavior: 'smooth', inline: 'start' })">
           가상 시뮬레이션 가동<span class="sdot"></span>
         </button>
       </div>
@@ -556,7 +759,7 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
 
 
     <!-- ════ CENTER: LOGIC ENGINE ════ -->
-    <div class="panel">
+    <div class="panel" id="panel-engine">
       <div class="panel-hdr">LOGIC ENGINE</div>
       <div class="center-body" id="cmp-container">
 
@@ -640,7 +843,7 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
 
 
     <!-- ════ RIGHT: OUTPUT RESULT ════ -->
-    <div class="panel">
+    <div class="panel" id="panel-output">
       <div class="out-hdr">
         <span class="out-hdr-title">OUTPUT RESULT</span>
         <span style="font-size:.65rem;color:var(--txt2)">최종 정혈</span>
@@ -2205,7 +2408,7 @@ function runSimulation(){
     } else {
       addLog(`  용상팔살: 입수룡 정보 없음 (판단 보류)`,'var(--txt3)');
     }
-  }, 500);
+  }, 50);
 
   // ── STEP 2: 12포태 (1200ms)
   setTimeout(()=>{
@@ -2265,7 +2468,7 @@ function runSimulation(){
     addLog(`  파구 ${S.pagu.char}: ${paguStage}  ${GOOD_PAGU.has(paguStage)?'[吉]':'[凶]'}`);
 
 
-  }, 1200);
+  }, 100);
 
   // ── STEP 3: 삼합 & 향법 운용표 조회 (2000ms)
   setTimeout(()=>{
@@ -2305,7 +2508,7 @@ function runSimulation(){
     }
     addLog(`  삼합: ${S.bureau}국 (${samhap}) · 파구 기준: ${PAGU_BUREAU_DIRS[S.bureau]}`);
 
-  }, 2000);
+  }, 150);
 
   // ── STEP 4: 정응정양 검증 (2900ms)
   setTimeout(()=>{
@@ -2315,7 +2518,7 @@ function runSimulation(){
     addLog(`  득수 판정: ${shuiGood?'합격(吉)':'불합격(凶)'}`,shuiGood?'var(--teal)':'var(--red)');
     addLog(`  파구 판정: ${paguGood?'합격(吉)':'불합격(凶)'}`,paguGood?'var(--teal)':'var(--red)');
 
-  }, 2900);
+  }, 200);
 
   // ── FINAL RESULTS (4000ms)
   setTimeout(()=>{
@@ -2647,7 +2850,7 @@ function runSimulation(){
     btn.classList.remove('running');
     btn.innerHTML='가상 시뮬레이션 가동<span class="sdot"></span>';
     S.simDone=true;
-  }, 4000);
+  }, 300);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -3586,6 +3789,27 @@ document.addEventListener('DOMContentLoaded',()=>{
   `;
   document.head.appendChild(style);
 });
+
+function switchTab(index) {
+  const panels = document.querySelectorAll('.dash-body .panel');
+  const tabs = document.querySelectorAll('.mobile-tab-btn');
+  
+  panels.forEach((p, i) => {
+    if (i === index) {
+      p.classList.add('active');
+    } else {
+      p.classList.remove('active');
+    }
+  });
+  
+  tabs.forEach((t, i) => {
+    if (i === index) {
+      t.classList.add('active');
+    } else {
+      t.classList.remove('active');
+    }
+  });
+}
 </script>
 </body>
 </html>
