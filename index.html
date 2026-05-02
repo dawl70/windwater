@@ -18,7 +18,7 @@
   --pb:rgba(0,160,110,.45); --pb2:rgba(0,120,80,.25);
   --txt:#c8ffe0; --txt2:#5aaa80; --txt3:#3a7050;
 }
-html,body{width:100%;height:100%;overflow:hidden}
+html,body{width:100%;height:100%;height:100dvh;overflow:hidden}
 body{font-family:'Noto Sans KR',sans-serif;color:var(--txt);background:#050f0a}
 
 /* ─── NATURE BACKGROUND ─── */
@@ -44,7 +44,7 @@ body{font-family:'Noto Sans KR',sans-serif;color:var(--txt);background:#050f0a}
 /* ─── DASHBOARD SHELL ─── */
 .dashboard{
   position:relative;z-index:10;
-  width:100vw;height:100vh;
+  width:100vw;height:100vh;height:100dvh;
   display:flex;flex-direction:column;
   padding:6px;gap:5px;
 }
@@ -530,10 +530,13 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
   html, body {
     overflow: hidden !important;
     height: 100vh !important;
+    height: 100dvh !important;
     width: 100vw !important;
   }
   .dashboard {
     height: 100vh !important;
+    height: 100dvh !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
     width: 100vw !important;
     padding: 10px;
     display: flex !important;
@@ -581,6 +584,7 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
 @media (min-width: 1025px) {
   .dashboard {
     height: 100vh;
+    height: 100dvh;
     width: 100vw;
   }
   .dash-body {
