@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>이기풍수 감결</title>
 <meta name="description" content="풍수지리 이기론 기반 감결 시뮬레이션 시스템">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -418,7 +418,8 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
   border-radius: 4px;
   padding: 4px;
   gap: 4px;
-  margin/* ════════════════════════════════════════════════════════════
+}
+/* ════════════════════════════════════════════════════════════
    📱 핸드폰용 UI/UX (Mobile: ~767px) - 사주8 스타일
    ════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
@@ -438,6 +439,7 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
     display: flex !important;
     flex-direction: column !important;
     gap: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
   }
   .dash-hdr {
     padding: 12px 16px;
@@ -586,7 +588,8 @@ select.sel:focus{border-color:var(--teal);box-shadow:0 0 8px rgba(0,200,160,.2)}
     grid-template-columns: 280px 1fr 280px;
     gap: 8px;
   }
-}sults Adjustments */
+}
+/* Results Adjustments */
   #analysis-result {
     font-size: 0.85rem;
     line-height: 1.65;
